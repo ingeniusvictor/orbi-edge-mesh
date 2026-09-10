@@ -52,6 +52,9 @@ jobs:
           python -m py_compile policy/thermal_power.py
           python -m py_compile discovery/static_discovery.py
           python -m py_compile models/inventory.py
+          python -m py_compile models/placement.py
+          python -m py_compile models/storage_manager.py
+          python -m py_compile models/roles.py
           python -m py_compile observability/events.py
           python -m py_compile observability/store.py
           python -m py_compile observability/metrics.py
@@ -84,6 +87,7 @@ jobs:
               Path("contracts/model-inventory.schema.json"),
               Path("contracts/execution-event.schema.json"),
               Path("contracts/workload-profile.schema.json"),
+              Path("contracts/model-placement.schema.json"),
               Path("contracts/examples/node01-capability.example.json"),
               Path("contracts/examples/node02-capability.example.json"),
               Path("contracts/examples/node03-capability.example.json"),
@@ -91,6 +95,7 @@ jobs:
               Path("contracts/examples/node02-capability-models.example.json"),
               Path("contracts/examples/node03-capability-models.example.json"),
               Path("contracts/examples/workload-profiles.example.json"),
+              Path("contracts/examples/model-placement.example.json"),
               Path("discovery/example-nodes.json"),
           ]:
               with path.open("r", encoding="utf-8") as f:
