@@ -20,11 +20,14 @@ jobs:
           python -m py_compile scripts/pc/headless_probe.py
           python -m py_compile scripts/pc/watchdog_fault_probe.py
           python -m py_compile scripts/android/check_recovery_policy.py
+          python -m py_compile scripts/android/node_idle_monitor.py
           python -m py_compile node/mock_node_agent.py
           python -m py_compile node/mock_inference_server.py
           python -m py_compile node/lifecycle.py
           python -m py_compile node/policy_gate.py
           python -m py_compile node/local_telemetry.py
+          python -m py_compile node/power_state.py
+          python -m py_compile node/idle_controller.py
           python -m py_compile manager/orbi_manager.py
           python -m py_compile manager/registry.py
           python -m py_compile manager/routing.py
@@ -45,6 +48,7 @@ jobs:
           python -m py_compile manager/history_routing.py
           python -m py_compile manager/adaptive_scoring.py
           python -m py_compile manager/workload_scoring.py
+          python -m py_compile manager/wake_planner.py
           python -m py_compile policy/thermal_power.py
           python -m py_compile discovery/static_discovery.py
           python -m py_compile models/inventory.py
