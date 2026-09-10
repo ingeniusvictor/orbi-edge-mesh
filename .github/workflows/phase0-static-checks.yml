@@ -18,6 +18,11 @@ jobs:
           python -m py_compile scripts/pc/test_llama_server.py
           python -m py_compile node/mock_node_agent.py
           python -m py_compile manager/orbi_manager.py
+          python -m py_compile manager/registry.py
+          python -m py_compile manager/routing.py
+          python -m py_compile manager/heartbeat.py
+          python -m py_compile manager/orbi_manager_v2.py
+          python -m py_compile discovery/static_discovery.py
 
       - name: Unit tests
         run: python -m unittest discover -s tests -v
@@ -41,6 +46,7 @@ jobs:
               Path("contracts/examples/node01-capability.example.json"),
               Path("contracts/examples/node02-capability.example.json"),
               Path("contracts/examples/node03-capability.example.json"),
+              Path("discovery/example-nodes.json"),
           ]:
               with path.open("r", encoding="utf-8") as f:
                   json.load(f)
