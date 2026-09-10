@@ -18,8 +18,10 @@ jobs:
           python -m py_compile scripts/pc/test_llama_server.py
           python -m py_compile scripts/pc/summarize_observability.py
           python -m py_compile scripts/pc/headless_probe.py
+          python -m py_compile scripts/pc/watchdog_fault_probe.py
           python -m py_compile node/mock_node_agent.py
           python -m py_compile node/mock_inference_server.py
+          python -m py_compile node/lifecycle.py
           python -m py_compile manager/orbi_manager.py
           python -m py_compile manager/registry.py
           python -m py_compile manager/routing.py
@@ -61,6 +63,8 @@ jobs:
           bash -n scripts/android/start_local_server.sh
           bash -n scripts/android/start_headless_node01.sh
           bash -n scripts/android/stop_headless_node01.sh
+          bash -n scripts/android/watchdog_node01.sh
+          bash -n scripts/android/reset_watchdog_budget.sh
 
       - name: JSON parse
         run: |
