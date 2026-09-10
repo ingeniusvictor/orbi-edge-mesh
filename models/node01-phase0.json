@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "node_id": "node-01",
+  "phase": "phase-0",
+  "primary_candidate": {
+    "model_id": "qwen3-1.7b-q4_k_m",
+    "family": "qwen3",
+    "source_repo": "ggml-org/Qwen3-1.7B-GGUF",
+    "filename": "Qwen3-1.7B-Q4_K_M.gguf",
+    "quantization": "Q4_K_M",
+    "approx_size_gb": 1.28,
+    "purpose": "first offline smoke test and LAN server validation",
+    "residency": "warm",
+    "status": "candidate"
+  },
+  "constraints": [
+    "Do not use this selection as a performance ceiling.",
+    "Do not start Phase 0 hardware certification with a much larger model.",
+    "Record exact downloaded file size and llama.cpp commit.",
+    "Keep model outside Git."
+  ]
+}
