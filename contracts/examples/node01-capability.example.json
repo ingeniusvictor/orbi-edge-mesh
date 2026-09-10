@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1",
+  "node_id": "node-01",
+  "device": {
+    "manufacturer": "POCO",
+    "model": "POCO X7 Pro 5G",
+    "android_version": "TBD",
+    "abi": "arm64-v8a",
+    "soc": "MediaTek Dimensity 8400-Ultra",
+    "gpu": "Mali-G720",
+    "npu": "8th-generation MediaTek NPU"
+  },
+  "runtime": {
+    "kind": "llama.cpp",
+    "version": "TBD",
+    "commit": null
+  },
+  "resources": {
+    "physical_ram_mb": 12288,
+    "memory_extension_enabled": null,
+    "memory_extension_mb": null,
+    "storage_total_mb": 524288,
+    "storage_free_mb": 0
+  },
+  "health": {
+    "status": "offline",
+    "battery_percent": null,
+    "charging": null,
+    "temperature_c": null,
+    "thermal_state": "unknown"
+  },
+  "services": [
+    {
+      "type": "llm",
+      "status": "disabled",
+      "model": null,
+      "endpoint": null
+    }
+  ]
+}
