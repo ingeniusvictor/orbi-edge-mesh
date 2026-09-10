@@ -16,6 +16,7 @@ jobs:
       - name: Python syntax
         run: |
           python -m py_compile scripts/pc/test_llama_server.py
+          python -m py_compile scripts/pc/summarize_observability.py
           python -m py_compile node/mock_node_agent.py
           python -m py_compile node/mock_inference_server.py
           python -m py_compile manager/orbi_manager.py
@@ -30,9 +31,14 @@ jobs:
           python -m py_compile manager/routing_v3.py
           python -m py_compile manager/request_planner.py
           python -m py_compile manager/execution.py
+          python -m py_compile manager/execution_v2.py
+          python -m py_compile manager/history_routing.py
           python -m py_compile policy/thermal_power.py
           python -m py_compile discovery/static_discovery.py
           python -m py_compile models/inventory.py
+          python -m py_compile observability/events.py
+          python -m py_compile observability/store.py
+          python -m py_compile observability/metrics.py
 
       - name: Unit tests
         run: python -m unittest discover -s tests -v
@@ -54,6 +60,7 @@ jobs:
           for path in [
               Path("contracts/node-capability.schema.json"),
               Path("contracts/model-inventory.schema.json"),
+              Path("contracts/execution-event.schema.json"),
               Path("contracts/examples/node01-capability.example.json"),
               Path("contracts/examples/node02-capability.example.json"),
               Path("contracts/examples/node03-capability.example.json"),
