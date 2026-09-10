@@ -27,12 +27,15 @@ jobs:
           python -m py_compile manager/orbi_manager_v3.py
           python -m py_compile manager/orbi_manager_v4.py
           python -m py_compile manager/orbi_manager_v5.py
+          python -m py_compile manager/orbi_manager_v6.py
           python -m py_compile manager/routing_v2.py
           python -m py_compile manager/routing_v3.py
+          python -m py_compile manager/routing_v4.py
           python -m py_compile manager/request_planner.py
           python -m py_compile manager/execution.py
           python -m py_compile manager/execution_v2.py
           python -m py_compile manager/history_routing.py
+          python -m py_compile manager/adaptive_scoring.py
           python -m py_compile policy/thermal_power.py
           python -m py_compile discovery/static_discovery.py
           python -m py_compile models/inventory.py
