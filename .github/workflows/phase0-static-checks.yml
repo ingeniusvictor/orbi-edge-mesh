@@ -14,7 +14,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Python syntax
-        run: python -m py_compile scripts/pc/test_llama_server.py
+        run: |
+          python -m py_compile scripts/pc/test_llama_server.py
+          python -m py_compile node/mock_node_agent.py
+          python -m py_compile manager/orbi_manager.py
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
 
       - name: Shell syntax
         run: |
@@ -33,6 +39,8 @@ jobs:
           for path in [
               Path("contracts/node-capability.schema.json"),
               Path("contracts/examples/node01-capability.example.json"),
+              Path("contracts/examples/node02-capability.example.json"),
+              Path("contracts/examples/node03-capability.example.json"),
           ]:
               with path.open("r", encoding="utf-8") as f:
                   json.load(f)
