@@ -38,6 +38,7 @@ jobs:
           python -m py_compile manager/orbi_manager_v5.py
           python -m py_compile manager/orbi_manager_v6.py
           python -m py_compile manager/orbi_manager_v7.py
+          python -m py_compile manager/orbi_manager_phase0.py
           python -m py_compile manager/routing_v2.py
           python -m py_compile manager/routing_v3.py
           python -m py_compile manager/routing_v4.py
