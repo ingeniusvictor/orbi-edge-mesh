@@ -1,0 +1,40 @@
+name: Phase 0 static checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - feature/phase-0-foundation
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python syntax
+        run: python -m py_compile scripts/pc/test_llama_server.py
+
+      - name: Shell syntax
+        run: |
+          bash -n scripts/android/bootstrap_node01_termux.sh
+          bash -n scripts/android/build_llama_node01.sh
+          bash -n scripts/android/capture_baseline.sh
+          bash -n scripts/android/run_smoke_test.sh
+          bash -n scripts/android/start_local_server.sh
+
+      - name: JSON parse
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for path in [
+              Path("contracts/node-capability.schema.json"),
+              Path("contracts/examples/node01-capability.example.json"),
+          ]:
+              with path.open("r", encoding="utf-8") as f:
+                  json.load(f)
+              print(f"OK: {path}")
+          PY
