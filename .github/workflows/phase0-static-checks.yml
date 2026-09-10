@@ -81,6 +81,7 @@ jobs:
           bash -n scripts/android/stop_headless_node01.sh
           bash -n scripts/android/watchdog_node01.sh
           bash -n scripts/android/reset_watchdog_budget.sh
+          bash -n scripts/android/package_node01_evidence.sh
 
       - name: JSON parse
         run: |
