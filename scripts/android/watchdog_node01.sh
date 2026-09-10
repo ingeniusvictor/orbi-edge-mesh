@@ -24,7 +24,21 @@ fi
 is_process_alive() { pgrep -f "llama-server" >/dev/null 2>&1; }
 is_api_reachable() { curl --silent --fail --max-time 5 "http://$HOST:$PORT/v1/models" >/dev/null 2>&1; }
 
+policy_allows_restart() {
+  SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+  if python "$SCRIPT_DIR/check_recovery_policy.py" >>"$LOG_FILE" 2>&1; then
+    log "[POLICY PASS] recovery authorized"
+    return 0
+  fi
+  log "[POLICY BLOCK] recovery denied by thermal/power policy"
+  return 1
+}
+
 restart_service() {
+  if ! policy_allows_restart; then
+    log "[HOLD] service remains down until policy allows recovery"
+    return 2
+  fi
   if (( restart_count >= MAX_RESTARTS )); then
     log "[QUARANTINE] restart budget exhausted: $restart_count/$MAX_RESTARTS"
     return 1
