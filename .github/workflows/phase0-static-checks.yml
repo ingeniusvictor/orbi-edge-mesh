@@ -23,9 +23,12 @@ jobs:
           python -m py_compile manager/heartbeat.py
           python -m py_compile manager/orbi_manager_v2.py
           python -m py_compile manager/orbi_manager_v3.py
+          python -m py_compile manager/orbi_manager_v4.py
           python -m py_compile manager/routing_v2.py
+          python -m py_compile manager/routing_v3.py
           python -m py_compile policy/thermal_power.py
           python -m py_compile discovery/static_discovery.py
+          python -m py_compile models/inventory.py
 
       - name: Unit tests
         run: python -m unittest discover -s tests -v
@@ -46,9 +49,13 @@ jobs:
 
           for path in [
               Path("contracts/node-capability.schema.json"),
+              Path("contracts/model-inventory.schema.json"),
               Path("contracts/examples/node01-capability.example.json"),
               Path("contracts/examples/node02-capability.example.json"),
               Path("contracts/examples/node03-capability.example.json"),
+              Path("contracts/examples/node01-capability-models.example.json"),
+              Path("contracts/examples/node02-capability-models.example.json"),
+              Path("contracts/examples/node03-capability-models.example.json"),
               Path("discovery/example-nodes.json"),
           ]:
               with path.open("r", encoding="utf-8") as f:
