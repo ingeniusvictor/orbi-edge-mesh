@@ -21,3 +21,7 @@ __pycache__/
 Thumbs.db
 .vscode/
 .idea/
+runtime/security/
+*.trust.json
+*.pairing-token
+*.pairing-secret
