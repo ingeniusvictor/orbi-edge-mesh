@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1",
+  "node_id": "node-02",
+  "device": {
+    "manufacturer": "Xiaomi",
+    "model": "11T Pro",
+    "android_version": "TBD",
+    "abi": "arm64-v8a",
+    "soc": "Qualcomm Snapdragon 888",
+    "gpu": "Adreno 660",
+    "npu": null
+  },
+  "runtime": {
+    "kind": "llama.cpp",
+    "version": "TBD",
+    "commit": null
+  },
+  "resources": {
+    "physical_ram_mb": 8192,
+    "memory_extension_enabled": null,
+    "memory_extension_mb": null,
+    "storage_total_mb": 262144,
+    "storage_free_mb": 0
+  },
+  "health": {
+    "status": "ready",
+    "battery_percent": 70,
+    "charging": false,
+    "temperature_c": 34.0,
+    "thermal_state": "normal"
+  },
+  "services": [
+    {
+      "type": "llm",
+      "status": "ready",
+      "model": "mock-qwen-small",
+      "endpoint": "http://127.0.0.1:8081"
+    }
+  ]
+}
