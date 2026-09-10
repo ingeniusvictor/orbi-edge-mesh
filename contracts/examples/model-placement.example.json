@@ -1,0 +1,30 @@
+[
+  {
+    "model_id": "qwen-main",
+    "role": "primary",
+    "preferred_node_id": "node-01",
+    "residency": "hot",
+    "notes": "Primary LLM on POCO X7 Pro."
+  },
+  {
+    "model_id": "qwen-light",
+    "role": "fallback",
+    "preferred_node_id": "node-02",
+    "residency": "warm",
+    "notes": "Fallback LLM on Xiaomi 11T Pro."
+  },
+  {
+    "model_id": "whisper-small",
+    "role": "specialized",
+    "preferred_node_id": "node-03",
+    "residency": "warm",
+    "notes": "Speech-to-text role."
+  },
+  {
+    "model_id": "kokoro-es",
+    "role": "specialized",
+    "preferred_node_id": "node-03",
+    "residency": "cold",
+    "notes": "TTS may remain cold until needed."
+  }
+]
