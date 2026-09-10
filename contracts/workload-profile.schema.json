@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/workload-profile.schema.json",
+  "title": "ORBI Edge Workload Profile",
+  "type": "object",
+  "required": [
+    "workload_type",
+    "service_type",
+    "latency_sensitivity",
+    "expected_duration",
+    "thermal_sensitivity"
+  ],
+  "properties": {
+    "workload_type": { "type": "string", "minLength": 1 },
+    "service_type": { "type": "string", "minLength": 1 },
+    "latency_sensitivity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "expected_duration": {
+      "type": "string",
+      "enum": ["short", "medium", "long"]
+    },
+    "thermal_sensitivity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "preferred_model_tag": { "type": ["string", "null"] },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}
