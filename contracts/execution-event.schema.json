@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/execution-event.schema.json",
+  "title": "ORBI Edge Execution Event",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp",
+    "request_id",
+    "node_id",
+    "service_type",
+    "model_id",
+    "ok",
+    "elapsed_s"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "0.1" },
+    "timestamp": { "type": "string" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "node_id": { "type": "string", "minLength": 1 },
+    "service_type": { "type": "string", "minLength": 1 },
+    "model_id": { "type": "string", "minLength": 1 },
+    "ok": { "type": "boolean" },
+    "elapsed_s": { "type": "number", "minimum": 0 },
+    "error": { "type": ["string", "null"] },
+    "temperature_c": { "type": ["number", "null"] },
+    "battery_percent": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "charging": { "type": ["boolean", "null"] }
+  },
+  "additionalProperties": false
+}
