@@ -60,6 +60,11 @@ jobs:
           python -m py_compile observability/metrics.py
           python -m py_compile workloads/profiles.py
           python -m py_compile workloads/classifier.py
+          python -m py_compile security/pairing.py
+          python -m py_compile security/signing.py
+          python -m py_compile security/replay.py
+          python -m py_compile security/trust_store.py
+          python -m py_compile scripts/pc/generate_pairing_token.py
 
       - name: Unit tests
         run: python -m unittest discover -s tests -v
@@ -88,6 +93,7 @@ jobs:
               Path("contracts/execution-event.schema.json"),
               Path("contracts/workload-profile.schema.json"),
               Path("contracts/model-placement.schema.json"),
+              Path("contracts/trust-store.schema.json"),
               Path("contracts/examples/node01-capability.example.json"),
               Path("contracts/examples/node02-capability.example.json"),
               Path("contracts/examples/node03-capability.example.json"),
