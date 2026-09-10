@@ -22,6 +22,9 @@ jobs:
           python -m py_compile manager/routing.py
           python -m py_compile manager/heartbeat.py
           python -m py_compile manager/orbi_manager_v2.py
+          python -m py_compile manager/orbi_manager_v3.py
+          python -m py_compile manager/routing_v2.py
+          python -m py_compile policy/thermal_power.py
           python -m py_compile discovery/static_discovery.py
 
       - name: Unit tests
