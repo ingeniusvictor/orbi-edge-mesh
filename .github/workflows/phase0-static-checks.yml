@@ -82,6 +82,8 @@ jobs:
           bash -n scripts/android/watchdog_node01.sh
           bash -n scripts/android/reset_watchdog_budget.sh
           bash -n scripts/android/package_node01_evidence.sh
+          bash -n scripts/android/download_node01_phase0_model.sh
+          bash -n scripts/android/run_node01_phase0_model.sh
 
       - name: JSON parse
         run: |
@@ -105,6 +107,7 @@ jobs:
               Path("contracts/examples/workload-profiles.example.json"),
               Path("contracts/examples/model-placement.example.json"),
               Path("discovery/example-nodes.json"),
+              Path("models/node01-phase0.json"),
           ]:
               with path.open("r", encoding="utf-8") as f:
                   json.load(f)
