@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import sys
 import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -9,6 +10,7 @@ from pathlib import Path
 MODULE_PATH = Path(__file__).parents[1] / "scripts" / "pc" / "node01_validation_harness.py"
 spec = importlib.util.spec_from_file_location("node01_validation_harness", MODULE_PATH)
 mod = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = mod
 spec.loader.exec_module(mod)
 
 
