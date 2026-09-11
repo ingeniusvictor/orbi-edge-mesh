@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -75,15 +77,24 @@ private fun NodeStatusScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    remember {
+    val configStore = remember {
         EdgeNodeRuntime.initialize(context.applicationContext)
-        Unit
+        NodeConfigStore(context.applicationContext)
+    }
+
+    var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            supervisorSnapshot = SupervisorMonitor.current
+            delay(1_000)
+        }
     }
 
     var serviceStatus by remember { mutableStateOf("STOPPED") }
     var apiStatus by remember { mutableStateOf("STOPPED") }
     var modelStatus by remember { mutableStateOf("NOT IMPORTED") }
-    var modelPath by remember { mutableStateOf<String?>(null) }
+    var modelPath by remember { mutableStateOf(configStore.modelPath()) }
     var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
     var inferenceStatus by remember { mutableStateOf("NOT RUN") }
     var responseText by remember { mutableStateOf("") }
@@ -104,6 +115,7 @@ private fun NodeStatusScreen(
                 when (result) {
                     is ModelImportResult.Success -> {
                         modelPath = result.filePath
+                        configStore.setValidatedModelPath(result.filePath)
                         modelStatus = "VALIDATED: ${result.bytes} bytes | SHA-256 MATCH"
                     }
                     is ModelImportResult.Failure -> {
@@ -176,12 +188,18 @@ private fun NodeStatusScreen(
                 val path = modelPath ?: return@Button
                 runtimeStatus = "LOADING MODEL..."
                 scope.launch {
-                    runtimeStatus = withContext(Dispatchers.IO) {
+                    val result = withContext(Dispatchers.IO) {
                         NativeBridge.loadModel(
                             modelPath = path,
                             contextSize = 4096,
                             threads = 4,
                         )
+                    }
+                    runtimeStatus = result
+                    if (result == "MODEL LOADED") {
+                        configStore.setValidatedModelPath(path)
+                        configStore.setRuntimeConfig(4096, 4)
+                        configStore.setDesiredModelLoaded(true)
                     }
                 }
             },
@@ -216,6 +234,7 @@ private fun NodeStatusScreen(
         Button(
             onClick = {
                 scope.launch {
+                    configStore.setDesiredModelLoaded(false)
                     runtimeStatus = withContext(Dispatchers.IO) {
                         NativeBridge.unloadModel()
                     }
@@ -276,12 +295,30 @@ private fun NodeStatusScreen(
 
         Button(
             onClick = {
+                configStore.setDesiredModelLoaded(false)
                 context.stopService(Intent(context, EdgeNodeService::class.java))
                 serviceStatus = "STOP REQUESTED"
                 apiStatus = "STOPPED BY SERVICE"
             },
         ) {
             Text("Stop headless node service")
+        }
+
+        HorizontalDivider()
+        Text("Bounded supervisor", style = MaterialTheme.typography.titleMedium)
+        Text("Running: ${supervisorSnapshot.running}")
+        Text("Restart attempts: ${supervisorSnapshot.restartAttempts}/3")
+        Text("Quarantined: ${supervisorSnapshot.quarantined}")
+        Text("Last action: ${supervisorSnapshot.lastAction}")
+
+        Button(
+            enabled = configStore.desiredModelLoaded(),
+            onClick = {
+                runtimeStatus = NativeBridge.unloadModel()
+                inferenceStatus = "SIMULATED RUNTIME LOSS; SUPERVISOR SHOULD RECOVER"
+            },
+        ) {
+            Text("Simulate model runtime failure")
         }
 
         if (responseText.isNotBlank()) {
@@ -291,7 +328,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "N6 is a headless research preview. 30-minute screen-off parity remains physically uncertified until tested on Node-01.",
+            "N7 adds bounded self-recovery. Recovery remains a controlled research feature until physically fault-injected on Node-01.",
             style = MaterialTheme.typography.bodySmall,
         )
     }

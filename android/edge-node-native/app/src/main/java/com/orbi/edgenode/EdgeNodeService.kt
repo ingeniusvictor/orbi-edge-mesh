@@ -12,10 +12,17 @@ import android.os.PowerManager
 
 class EdgeNodeService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
+    private lateinit var configStore: NodeConfigStore
+    private var supervisor: EdgeNodeSupervisor? = null
 
     override fun onCreate() {
         super.onCreate()
         EdgeNodeRuntime.initialize(applicationContext)
+        configStore = NodeConfigStore(applicationContext)
+        supervisor = EdgeNodeSupervisor(
+            store = configStore,
+            recoveryGate = AllowForN7ResearchGate(),
+        )
         ensureNotificationChannel()
     }
 
@@ -33,12 +40,15 @@ class EdgeNodeService : Service() {
         acquireWakeLock()
 
         val apiStatus = EdgeNodeRuntime.startApi()
-        updateNotification("ORBI Edge Node • $apiStatus")
+        supervisor?.start()
+        updateNotification("ORBI Edge Node • $apiStatus • supervisor active")
 
         return START_STICKY
     }
 
     override fun onDestroy() {
+        supervisor?.stop()
+        supervisor = null
         EdgeNodeRuntime.stopApi()
         NativeBridge.unloadModel()
         releaseWakeLock()
