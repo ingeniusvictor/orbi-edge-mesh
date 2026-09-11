@@ -23,12 +23,13 @@ class MainActivity : ComponentActivity() {
 
         val snapshot = DeviceProfiler.snapshot()
         val nativeStatus = NativeBridge.status()
+        val llamaSystemInfo = NativeBridge.llamaSystemInfo()
         val telemetry = NodeTelemetryProvider(applicationContext).snapshot()
 
         setContent {
             MaterialTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    NodeStatusScreen(snapshot, nativeStatus, telemetry)
+                    NodeStatusScreen(snapshot, nativeStatus, llamaSystemInfo, telemetry)
                 }
             }
         }
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
 private fun NodeStatusScreen(
     snapshot: DeviceSnapshot,
     nativeStatus: String,
+    llamaSystemInfo: String,
     telemetry: NodeHealthSnapshot,
 ) {
     Column(
@@ -58,7 +60,9 @@ private fun NodeStatusScreen(
         Text("Android: ${snapshot.androidVersion}")
         Text("ABI: ${snapshot.abi}")
         Text("Native runtime: $nativeStatus")
-        Text("AI runtime: NOT LOADED")
+        Text("llama.cpp link: READY")
+        Text("llama.cpp info: $llamaSystemInfo")
+        Text("AI model runtime: NOT LOADED")
 
         HorizontalDivider()
         Text("Native telemetry preview", style = MaterialTheme.typography.titleMedium)
