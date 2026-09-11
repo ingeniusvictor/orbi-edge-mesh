@@ -359,8 +359,8 @@ Java_com_orbi_edgenode_NativeBridge_lastGenerationMetricsNative(
     std::ostringstream out;
     out << std::fixed << std::setprecision(3)
         << "tokens=" << g_last_generated_tokens
-        << "; generation_ms=" << g_last_generation_ms
-        << "; tokens_per_second=" << tps;
+        << "; inference_wall_ms=" << g_last_generation_ms
+        << "; output_tokens_per_second_wall=" << tps;
 
     return env->NewStringUTF(out.str().c_str());
 }
