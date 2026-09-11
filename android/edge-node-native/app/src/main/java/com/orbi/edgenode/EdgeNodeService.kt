@@ -21,7 +21,7 @@ class EdgeNodeService : Service() {
         configStore = NodeConfigStore(applicationContext)
         supervisor = EdgeNodeSupervisor(
             store = configStore,
-            recoveryGate = AllowForN7ResearchGate(),
+            recoveryGate = NativeRecoveryPolicy(applicationContext),
         )
         ensureNotificationChannel()
     }
