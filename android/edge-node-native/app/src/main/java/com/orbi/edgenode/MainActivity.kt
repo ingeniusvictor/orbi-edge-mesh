@@ -160,6 +160,7 @@ private fun NodeStatusScreen(
         )
 
         Text("Research build: ${BuildConfig.VERSION_NAME}")
+        Text("Source: ${BuildConfig.GIT_SHA.take(12)}")
         Text("Device: ${snapshot.model}")
         Text("Android: ${snapshot.androidVersion}")
         Text("ABI: ${snapshot.abi}")
