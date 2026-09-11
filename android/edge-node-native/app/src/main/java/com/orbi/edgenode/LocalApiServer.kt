@@ -156,9 +156,13 @@ class LocalApiServer(
                 val supervisor = SupervisorMonitor.current
                 val json = JSONObject()
                     .put("service", "orbi-edge-node")
+                    .put("manufacturer", device.manufacturer)
                     .put("device_model", device.model)
+                    .put("device_codename", device.device)
                     .put("android", device.androidVersion)
+                    .put("api_level", device.apiLevel)
                     .put("abi", device.abi)
+                    .put("logical_processors", device.availableProcessors)
                     .put("memory_total_bytes", health.memory.totalBytes ?: JSONObject.NULL)
                     .put("memory_available_bytes", health.memory.availableBytes ?: JSONObject.NULL)
                     .put("storage_total_bytes", health.storage.totalBytes ?: JSONObject.NULL)

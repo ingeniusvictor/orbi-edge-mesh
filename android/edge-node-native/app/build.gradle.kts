@@ -1,3 +1,5 @@
+val orbiGitSha = System.getenv("GITHUB_SHA") ?: "local"
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -13,8 +15,9 @@ android {
         applicationId = "com.orbi.edgenode"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.11.0-r2-prep"
+        versionCode = 13
+        versionName = "0.12.0-r3-research"
+        buildConfigField("String", "GIT_SHA", "\"${orbiGitSha}\"")
 
         ndk {
             abiFilters += listOf("arm64-v8a")
