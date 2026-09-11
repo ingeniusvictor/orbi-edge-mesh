@@ -233,7 +233,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
             return env->NewStringUTF("ERROR: DECODE_FAILED");
         }
 
-        const llama_token token = llama_sampler_sample(sampler, ctx, -1);
+        llama_token token = llama_sampler_sample(sampler, ctx, -1);
 
         if (llama_vocab_is_eog(vocab, token)) {
             break;
