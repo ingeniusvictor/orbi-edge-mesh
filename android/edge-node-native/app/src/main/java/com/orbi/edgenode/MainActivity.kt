@@ -57,7 +57,12 @@ private fun NodeStatusScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
     var modelStatus by remember { mutableStateOf("NOT IMPORTED") }
+    var modelPath by remember { mutableStateOf<String?>(null) }
+    var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
+    var inferenceStatus by remember { mutableStateOf("NOT RUN") }
+    var responseText by remember { mutableStateOf("") }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -72,11 +77,15 @@ private fun NodeStatusScreen(
                         .importFromUri(uri, ReferenceModels.qwen3Node01)
                 }
 
-                modelStatus = when (result) {
-                    is ModelImportResult.Success ->
-                        "VALIDATED: ${result.bytes} bytes | SHA-256 MATCH"
-                    is ModelImportResult.Failure ->
-                        "${result.code}: ${result.message}"
+                when (result) {
+                    is ModelImportResult.Success -> {
+                        modelPath = result.filePath
+                        modelStatus = "VALIDATED: ${result.bytes} bytes | SHA-256 MATCH"
+                    }
+                    is ModelImportResult.Failure -> {
+                        modelPath = null
+                        modelStatus = "${result.code}: ${result.message}"
+                    }
                 }
             }
         }
@@ -101,7 +110,6 @@ private fun NodeStatusScreen(
         Text("Native runtime: $nativeStatus")
         Text("llama.cpp link: READY")
         Text("llama.cpp info: $llamaSystemInfo")
-        Text("AI model runtime: NOT LOADED")
 
         HorizontalDivider()
         Text("Native telemetry preview", style = MaterialTheme.typography.titleMedium)
@@ -129,15 +137,78 @@ private fun NodeStatusScreen(
         Text(ReferenceModels.qwen3Node01.displayName)
         Text("Expected file: ${ReferenceModels.qwen3Node01.fileName}")
         Text("Import state: $modelStatus")
+        Text("Runtime state: $runtimeStatus")
+        Text("Inference state: $inferenceStatus")
 
         Button(
             onClick = { picker.launch(arrayOf("*/*")) },
         ) {
-            Text("Select and validate GGUF")
+            Text("1. Select and validate GGUF")
+        }
+
+        Button(
+            enabled = modelPath != null,
+            onClick = {
+                val path = modelPath ?: return@Button
+                runtimeStatus = "LOADING MODEL..."
+                scope.launch {
+                    runtimeStatus = withContext(Dispatchers.IO) {
+                        NativeBridge.loadModel(
+                            modelPath = path,
+                            contextSize = 4096,
+                            threads = 4,
+                        )
+                    }
+                }
+            },
+        ) {
+            Text("2. Load Qwen into native runtime")
+        }
+
+        Button(
+            enabled = modelPath != null,
+            onClick = {
+                inferenceStatus = "GENERATING..."
+                responseText = ""
+                scope.launch {
+                    val response = withContext(Dispatchers.IO) {
+                        NativeBridge.generate(
+                            prompt = "Responde en español y en una sola frase: ¿qué es una red local de inteligencia artificial?",
+                            maxTokens = 96,
+                        )
+                    }
+                    responseText = response
+                    inferenceStatus = if (response.startsWith("ERROR:")) {
+                        "FAIL"
+                    } else {
+                        "PASS / REVIEW RESPONSE"
+                    }
+                }
+            },
+        ) {
+            Text("3. Run native inference test")
+        }
+
+        Button(
+            onClick = {
+                scope.launch {
+                    runtimeStatus = withContext(Dispatchers.IO) {
+                        NativeBridge.unloadModel()
+                    }
+                }
+            },
+        ) {
+            Text("Unload model")
+        }
+
+        if (responseText.isNotBlank()) {
+            HorizontalDivider()
+            Text("Native Qwen response", style = MaterialTheme.typography.titleMedium)
+            Text(responseText)
         }
 
         Text(
-            "Research preview: N0/N1/N2/N3 gates remain physically uncertified until tested on Node-01.",
+            "N4 is a research preview. Compile success does not certify inference until this exact path passes on Node-01.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
