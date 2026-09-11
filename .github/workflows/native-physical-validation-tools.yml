@@ -1,0 +1,55 @@
+name: Native Physical Validation Tools
+
+on:
+  push:
+    branches:
+      - feature/native-physical-validation-tools
+    paths:
+      - "scripts/pc/native_node01_certify.py"
+      - "scripts/pc/native_headless_probe.py"
+      - "scripts/pc/orbi_signed_chat.py"
+      - "scripts/android/export_reference_model_to_downloads.sh"
+      - "scripts/pc/install_native_candidate.ps1"
+      - "tests/test_native_node01_certify.py"
+      - "tests/test_native_headless_probe.py"
+      - "tests/test_orbi_signed_chat.py"
+      - ".github/workflows/native-physical-validation-tools.yml"
+
+jobs:
+  test-validation-tools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile validation scripts
+        run: |
+          python -m py_compile scripts/pc/orbi_signed_chat.py
+          python -m py_compile scripts/pc/native_headless_probe.py
+          python -m py_compile scripts/pc/native_node01_certify.py
+
+      - name: Check Android validation helper syntax
+        run: bash -n scripts/android/export_reference_model_to_downloads.sh
+
+      - name: Parse Windows installer script
+        shell: pwsh
+        run: |
+          $null = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path "scripts/pc/install_native_candidate.ps1"),
+            [ref]$null,
+            [ref]$null
+          )
+
+      - name: Run validation tool tests
+        run: |
+          python -m unittest -v \
+            tests.test_orbi_signed_chat \
+            tests.test_native_headless_probe \
+            tests.test_native_node01_certify
