@@ -13,6 +13,7 @@ on:
       - "models/native-model-catalog.example.json"
       - "research/**"
       - "scripts/pc/orbi_signed_chat.py"
+      - "scripts/pc/native_headless_probe.py"
       - "tests/test_orbi_signed_chat.py"
       - "tests/test_native_mesh_manager.py"
       - ".github/workflows/native-mesh-manager.yml"
@@ -44,9 +45,11 @@ jobs:
           python -m py_compile manager/native_model_placement.py
           python -m py_compile research/distributed_feasibility.py
           python -m py_compile scripts/pc/orbi_signed_chat.py
+          python -m py_compile scripts/pc/native_headless_probe.py
 
       - name: Run trust and routing tests
         run: |
           python -m unittest -v             tests.test_orbi_signed_chat             tests.test_native_mesh_manager \
             tests.test_native_model_placement \
-            tests.test_distributed_feasibility
+            tests.test_distributed_feasibility \
+            tests.test_native_headless_probe
