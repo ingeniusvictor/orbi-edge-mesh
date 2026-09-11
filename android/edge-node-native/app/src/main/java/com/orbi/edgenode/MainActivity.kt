@@ -85,21 +85,18 @@ private fun NodeStatusScreen(
         PairingManager(context.applicationContext)
     }
 
+    var telemetrySnapshot by remember { mutableStateOf(telemetry) }
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
     var resourceDecision by remember {
-        mutableStateOf(
-            NodeResourcePolicy.evaluate(
-                NodeTelemetryProvider(context.applicationContext).snapshot()
-            )
-        )
+        mutableStateOf(NodeResourcePolicy.evaluate(telemetry))
     }
 
     LaunchedEffect(Unit) {
+        val provider = NodeTelemetryProvider(context.applicationContext)
         while (true) {
+            telemetrySnapshot = provider.snapshot()
             supervisorSnapshot = SupervisorMonitor.current
-            resourceDecision = NodeResourcePolicy.evaluate(
-                NodeTelemetryProvider(context.applicationContext).snapshot()
-            )
+            resourceDecision = NodeResourcePolicy.evaluate(telemetrySnapshot)
             delay(1_000)
         }
     }
@@ -168,29 +165,35 @@ private fun NodeStatusScreen(
         Text("ABI: ${snapshot.abi}")
         Text("CPU logical processors: ${snapshot.availableProcessors}")
         Text("Native runtime: $nativeStatus")
-        Text("llama.cpp link: READY")
+        Text(
+            "llama.cpp link: " +
+                if (
+                    llamaSystemInfo.startsWith("LLAMA NOT AVAILABLE") ||
+                    llamaSystemInfo.startsWith("LLAMA LINK ERROR")
+                ) "ERROR" else "CALLABLE"
+        )
         Text("llama.cpp info: $llamaSystemInfo")
 
         HorizontalDivider()
         Text("Native telemetry preview", style = MaterialTheme.typography.titleMedium)
 
-        Text("RAM total: ${Formatters.bytes(telemetry.memory.totalBytes)}")
-        Text("RAM available: ${Formatters.bytes(telemetry.memory.availableBytes)}")
-        Text("Low-memory flag: ${Formatters.bool(telemetry.memory.lowMemory)}")
+        Text("RAM total: ${Formatters.bytes(telemetrySnapshot.memory.totalBytes)}")
+        Text("RAM available: ${Formatters.bytes(telemetrySnapshot.memory.availableBytes)}")
+        Text("Low-memory flag: ${Formatters.bool(telemetrySnapshot.memory.lowMemory)}")
 
-        Text("Storage total: ${Formatters.bytes(telemetry.storage.totalBytes)}")
-        Text("Storage available: ${Formatters.bytes(telemetry.storage.availableBytes)}")
+        Text("Storage total: ${Formatters.bytes(telemetrySnapshot.storage.totalBytes)}")
+        Text("Storage available: ${Formatters.bytes(telemetrySnapshot.storage.availableBytes)}")
 
-        Text("Battery: ${Formatters.percent(telemetry.battery.percent)}")
-        Text("Charging: ${Formatters.bool(telemetry.battery.charging)}")
-        Text("Charge source: ${telemetry.battery.source ?: "UNKNOWN"}")
+        Text("Battery: ${Formatters.percent(telemetrySnapshot.battery.percent)}")
+        Text("Charging: ${Formatters.bool(telemetrySnapshot.battery.charging)}")
+        Text("Charge source: ${telemetrySnapshot.battery.source ?: "UNKNOWN"}")
 
-        Text("Network connected: ${Formatters.bool(telemetry.network.connected)}")
-        Text("Transports: ${Formatters.list(telemetry.network.transports)}")
-        Text("Addresses: ${Formatters.list(telemetry.network.addresses)}")
+        Text("Network connected: ${Formatters.bool(telemetrySnapshot.network.connected)}")
+        Text("Transports: ${Formatters.list(telemetrySnapshot.network.transports)}")
+        Text("Addresses: ${Formatters.list(telemetrySnapshot.network.addresses)}")
 
-        Text("Android thermal status: ${telemetry.thermal.status ?: "UNKNOWN"}")
-        Text("Thermal raw status: ${telemetry.thermal.rawStatus?.toString() ?: "UNKNOWN"}")
+        Text("Android thermal status: ${telemetrySnapshot.thermal.status ?: "UNKNOWN"}")
+        Text("Thermal raw status: ${telemetrySnapshot.thermal.rawStatus?.toString() ?: "UNKNOWN"}")
 
         HorizontalDivider()
         Text("Resource guard", style = MaterialTheme.typography.titleMedium)
@@ -272,11 +275,12 @@ private fun NodeStatusScreen(
                         )
                     }
                     responseText = response
-                    generationMetrics = NativeBridge.lastGenerationMetrics()
-                    inferenceStatus = if (response.startsWith("ERROR:")) {
-                        "FAIL"
+                    if (response.startsWith("ERROR:")) {
+                        generationMetrics = "NOT AVAILABLE FOR FAILED RUN"
+                        inferenceStatus = "FAIL"
                     } else {
-                        "PASS / REVIEW RESPONSE"
+                        generationMetrics = NativeBridge.lastGenerationMetrics()
+                        inferenceStatus = "PASS / REVIEW RESPONSE"
                     }
                 }
             },
@@ -308,6 +312,11 @@ private fun NodeStatusScreen(
 
         if (!pairingToken.isNullOrBlank()) {
             Text("Pairing token (copy now): $pairingToken")
+            Button(
+                onClick = { pairingToken = null },
+            ) {
+                Text("Hide pairing token")
+            }
         }
 
         Button(
@@ -341,7 +350,7 @@ private fun NodeStatusScreen(
         Text("API state: $apiStatus")
         Text(
             "Endpoint candidate: " +
-                (telemetry.network.addresses.firstOrNull { !it.contains(":") }
+                (telemetrySnapshot.network.addresses.firstOrNull { !it.contains(":") }
                     ?.let { "http://$it:8080" }
                     ?: "IPv4 unavailable")
         )
@@ -364,7 +373,7 @@ private fun NodeStatusScreen(
 
         HorizontalDivider()
         Text("Headless service", style = MaterialTheme.typography.titleMedium)
-        Text("Service state: $serviceStatus")
+        Text("Last service action: $serviceStatus")
         Text(
             "The foreground service owns a PARTIAL_WAKE_LOCK and keeps the research node eligible to run with the display off.",
             style = MaterialTheme.typography.bodySmall,
