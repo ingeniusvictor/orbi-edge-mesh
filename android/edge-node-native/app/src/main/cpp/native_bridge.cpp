@@ -122,6 +122,63 @@ std::string token_piece(const llama_vocab* vocab, llama_token token) {
     return std::string(large.data(), static_cast<size_t>(n));
 }
 
+bool format_single_user_chat(
+    const llama_model* model,
+    const std::string& user_text,
+    std::string* formatted
+) {
+    if (formatted == nullptr) {
+        return false;
+    }
+
+    const char* tmpl = llama_model_chat_template(model, nullptr);
+    if (tmpl == nullptr) {
+        *formatted = user_text;
+        return true;
+    }
+
+    llama_chat_message message{
+        "user",
+        user_text.c_str(),
+    };
+
+    std::vector<char> buffer(
+        std::max<size_t>(512, user_text.size() * 3 + 256)
+    );
+
+    int written = llama_chat_apply_template(
+        tmpl,
+        &message,
+        1,
+        true,
+        buffer.data(),
+        static_cast<int32_t>(buffer.size())
+    );
+
+    if (written < 0) {
+        return false;
+    }
+
+    if (written > static_cast<int>(buffer.size())) {
+        buffer.resize(static_cast<size_t>(written));
+        written = llama_chat_apply_template(
+            tmpl,
+            &message,
+            1,
+            true,
+            buffer.data(),
+            static_cast<int32_t>(buffer.size())
+        );
+    }
+
+    if (written < 0 || written > static_cast<int>(buffer.size())) {
+        return false;
+    }
+
+    formatted->assign(buffer.data(), static_cast<size_t>(written));
+    return true;
+}
+
 void unload_locked() {
     if (g_model != nullptr) {
         llama_model_free(g_model);
@@ -227,8 +284,13 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
         return env->NewStringUTF("ERROR: PROMPT_UTF8");
     }
 
-    const std::string prompt(prompt_chars);
+    const std::string user_prompt(prompt_chars);
     env->ReleaseStringUTFChars(prompt_value, prompt_chars);
+
+    std::string prompt;
+    if (!format_single_user_chat(g_model, user_prompt, &prompt)) {
+        return env->NewStringUTF("ERROR: CHAT_TEMPLATE_FAILED");
+    }
 
     const llama_vocab* vocab = llama_model_get_vocab(g_model);
     if (vocab == nullptr) {
