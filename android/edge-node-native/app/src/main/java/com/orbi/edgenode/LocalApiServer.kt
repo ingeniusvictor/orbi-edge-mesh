@@ -22,6 +22,7 @@ class LocalApiServer(
     private val port: Int = 8080,
 ) {
     private val running = AtomicBoolean(false)
+    private val pairing = PairingManager(context.applicationContext)
     private var serverSocket: ServerSocket? = null
     private var acceptThread: Thread? = null
     private var workers: ExecutorService? = null
@@ -167,6 +168,8 @@ class LocalApiServer(
                     .put("supervisor_restart_attempts", supervisor.restartAttempts)
                     .put("supervisor_quarantined", supervisor.quarantined)
                     .put("supervisor_last_action", supervisor.lastAction)
+                    .put("node_id", pairing.nodeId)
+                    .put("paired", pairing.hasPairingSecret())
                 writeJson(output, 200, json)
             }
 
@@ -191,6 +194,22 @@ class LocalApiServer(
             }
 
             method == "POST" && path == "/v1/chat/completions" -> {
+                val verification = pairing.verify(
+                    method = method,
+                    path = path,
+                    body = bodyBytes,
+                    headers = headers,
+                )
+
+                if (!verification.allowed) {
+                    writeJson(
+                        output,
+                        401,
+                        errorJson(verification.code, verification.message),
+                    )
+                    return
+                }
+
                 handleChat(output, body)
             }
 
@@ -322,6 +341,7 @@ class LocalApiServer(
         val reason = when (status) {
             200 -> "OK"
             400 -> "Bad Request"
+            401 -> "Unauthorized"
             404 -> "Not Found"
             413 -> "Payload Too Large"
             500 -> "Internal Server Error"
