@@ -4,9 +4,11 @@ This runbook begins only after the cumulative APK candidate is fully green in CI
 
 ## 1. Record the candidate
 
-Before installation, record branch, Git commit, APK SHA-256, app version and current Node-01 battery percentage.
+Before installation, record branch, Git commit, APK SHA-256, signing-certificate digest, app version and current Node-01 battery percentage.
 
-Do not use an APK whose source commit or checksum is unknown.
+Do not use an APK whose source commit, checksum or signer is unknown.
+
+The cumulative CI workflow preserves a research debug signing key through the GitHub Actions cache. After RC1 is installed, later research APKs intended as in-place upgrades should present the same signing-certificate digest. If the signer changes unexpectedly, stop and investigate instead of uninstalling the working node automatically.
 
 ## 2. Preserve the Phase 0 reference
 
