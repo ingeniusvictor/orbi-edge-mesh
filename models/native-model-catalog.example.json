@@ -1,0 +1,13 @@
+{
+  "schema_version": "0.1",
+  "models": [
+    {
+      "id": "qwen3-1.7b-q4_k_m-node01",
+      "display_name": "Qwen3 1.7B Q4_K_M",
+      "approx_size_bytes": 1374389535,
+      "service": "CHAT",
+      "source": "Phase 0 reference",
+      "notes": "Approximate size derived from the existing 1.28 GiB research manifest. Exact imported file size should replace this estimate when captured from Android."
+    }
+  ]
+}
