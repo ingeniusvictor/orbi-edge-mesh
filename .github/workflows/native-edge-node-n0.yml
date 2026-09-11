@@ -43,9 +43,19 @@ jobs:
         working-directory: android/edge-node-native
         run: gradle :app:assembleDebug --stacktrace
 
+      - name: Verify native bridge packaging
+        run: |
+          APK="android/edge-node-native/app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          unzip -l "$APK" | tee /tmp/orbi-apk-contents.txt
+          grep -q "lib/arm64-v8a/liborbi_native.so" /tmp/orbi-apk-contents.txt
+          sha256sum "$APK" | tee android/edge-node-native/app/build/outputs/apk/debug/app-debug.apk.sha256
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: orbi-edge-node-n0-debug
-          path: android/edge-node-native/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            android/edge-node-native/app/build/outputs/apk/debug/app-debug.apk
+            android/edge-node-native/app/build/outputs/apk/debug/app-debug.apk.sha256
           if-no-files-found: error
