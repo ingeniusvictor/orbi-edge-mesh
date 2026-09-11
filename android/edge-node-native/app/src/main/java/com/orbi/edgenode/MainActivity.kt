@@ -1,6 +1,8 @@
 package com.orbi.edgenode
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -35,6 +37,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_NOTIFICATIONS_CODE,
+            )
+        }
+
         val snapshot = DeviceProfiler.snapshot()
         val nativeStatus = NativeBridge.status()
         val llamaSystemInfo = NativeBridge.llamaSystemInfo()
@@ -47,6 +59,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+        private const val REQUEST_NOTIFICATIONS_CODE = 6002
     }
 }
 
