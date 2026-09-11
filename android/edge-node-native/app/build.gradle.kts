@@ -17,7 +17,7 @@ android {
         targetSdk = 35
         versionCode = 13
         versionName = "0.12.0-r3-research"
-        buildConfigField("String", "GIT_SHA", "\\"$orbiGitSha\\"")
+        buildConfigField("String", "GIT_SHA", "\"${orbiGitSha}\"")
 
         ndk {
             abiFilters += listOf("arm64-v8a")
