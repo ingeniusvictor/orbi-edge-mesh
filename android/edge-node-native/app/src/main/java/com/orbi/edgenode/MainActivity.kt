@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,12 +58,18 @@ private fun NodeStatusScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val apiServer = remember { LocalApiServer(context.applicationContext, 8080) }
 
+    var apiStatus by remember { mutableStateOf("STOPPED") }
     var modelStatus by remember { mutableStateOf("NOT IMPORTED") }
     var modelPath by remember { mutableStateOf<String?>(null) }
     var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
     var inferenceStatus by remember { mutableStateOf("NOT RUN") }
     var responseText by remember { mutableStateOf("") }
+
+    DisposableEffect(apiServer) {
+        onDispose { apiServer.stop() }
+    }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -201,6 +208,32 @@ private fun NodeStatusScreen(
             Text("Unload model")
         }
 
+        HorizontalDivider()
+        Text("Trusted-LAN API", style = MaterialTheme.typography.titleMedium)
+        Text("API state: $apiStatus")
+        Text(
+            "Endpoint candidate: " +
+                (telemetry.network.addresses.firstOrNull { !it.contains(":") }
+                    ?.let { "http://$it:8080" }
+                    ?: "IPv4 unavailable")
+        )
+        Text(
+            "Research warning: LAN-only, no public Internet exposure, no port forwarding.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        Button(
+            onClick = { apiStatus = apiServer.start() },
+        ) {
+            Text("Start local API")
+        }
+
+        Button(
+            onClick = { apiStatus = apiServer.stop() },
+        ) {
+            Text("Stop local API")
+        }
+
         if (responseText.isNotBlank()) {
             HorizontalDivider()
             Text("Native Qwen response", style = MaterialTheme.typography.titleMedium)
@@ -208,7 +241,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "N4 is a research preview. Compile success does not certify inference until this exact path passes on Node-01.",
+            "N5 is a trusted-LAN research preview. Physical Node-01 validation is required before any network-runtime claim.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
