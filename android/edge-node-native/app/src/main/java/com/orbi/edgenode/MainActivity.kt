@@ -67,10 +67,20 @@ private fun NodeStatusScreen(
     }
 
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
+    var resourceDecision by remember {
+        mutableStateOf(
+            NodeResourcePolicy.evaluate(
+                NodeTelemetryProvider(context.applicationContext).snapshot()
+            )
+        )
+    }
 
     LaunchedEffect(Unit) {
         while (true) {
             supervisorSnapshot = SupervisorMonitor.current
+            resourceDecision = NodeResourcePolicy.evaluate(
+                NodeTelemetryProvider(context.applicationContext).snapshot()
+            )
             delay(1_000)
         }
     }
@@ -153,6 +163,15 @@ private fun NodeStatusScreen(
         Text("Thermal raw status: ${telemetry.thermal.rawStatus?.toString() ?: "UNKNOWN"}")
 
         HorizontalDivider()
+        Text("Resource guard", style = MaterialTheme.typography.titleMedium)
+        Text("Policy action: ${resourceDecision.action}")
+        Text("Policy reason: ${resourceDecision.reason}")
+        Text(
+            "N8 uses Android thermal categories and battery state. It does not invent Celsius values when Android does not expose them.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        HorizontalDivider()
         Text("Reference model", style = MaterialTheme.typography.titleMedium)
         Text(ReferenceModels.qwen3Node01.displayName)
         Text("Expected file: ${ReferenceModels.qwen3Node01.fileName}")
@@ -170,6 +189,14 @@ private fun NodeStatusScreen(
             enabled = modelPath != null,
             onClick = {
                 val path = modelPath ?: return@Button
+                val decision = NodeResourcePolicy.evaluate(
+                    NodeTelemetryProvider(context.applicationContext).snapshot()
+                )
+                resourceDecision = decision
+                if (decision.action == ResourceAction.BLOCK) {
+                    runtimeStatus = "POLICY BLOCKED: ${decision.reason}"
+                    return@Button
+                }
                 runtimeStatus = "LOADING MODEL..."
                 scope.launch {
                     val result = withContext(Dispatchers.IO) {
@@ -194,13 +221,24 @@ private fun NodeStatusScreen(
         Button(
             enabled = modelPath != null,
             onClick = {
+                val decision = NodeResourcePolicy.evaluate(
+                    NodeTelemetryProvider(context.applicationContext).snapshot()
+                )
+                resourceDecision = decision
+                if (decision.action == ResourceAction.BLOCK) {
+                    inferenceStatus = "POLICY BLOCKED"
+                    responseText = decision.reason
+                    return@Button
+                }
+
                 inferenceStatus = "GENERATING..."
                 responseText = ""
+                val maxTokens = if (decision.action == ResourceAction.DEGRADE) 48 else 96
                 scope.launch {
                     val response = withContext(Dispatchers.IO) {
                         NativeBridge.generate(
                             prompt = "Responde en español y en una sola frase: ¿qué es una red local de inteligencia artificial?",
-                            maxTokens = 96,
+                            maxTokens = maxTokens,
                         )
                     }
                     responseText = response
@@ -296,7 +334,7 @@ private fun NodeStatusScreen(
         Text("Last action: ${supervisorSnapshot.lastAction}")
 
         Button(
-            enabled = configStore.desiredModelLoaded(),
+            enabled = configStore.desiredModelLoaded() && resourceDecision.action == ResourceAction.ALLOW,
             onClick = {
                 runtimeStatus = NativeBridge.unloadModel()
                 inferenceStatus = "SIMULATED RUNTIME LOSS; SUPERVISOR SHOULD RECOVER"
@@ -312,7 +350,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "N7 adds bounded self-recovery. Recovery remains a controlled research feature until physically fault-injected on Node-01.",
+            "N8 gates inference and automatic recovery using Android-observable thermal and battery signals. Physical policy calibration is still required.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
