@@ -19,6 +19,73 @@ int g_threads = 4;
 int g_last_generated_tokens = 0;
 double g_last_generation_ms = 0.0;
 
+bool jstring_to_utf8(
+    JNIEnv* env,
+    jstring value,
+    std::string* output
+) {
+    if (value == nullptr || output == nullptr) {
+        return false;
+    }
+
+    const jsize length = env->GetStringLength(value);
+    const jchar* chars = env->GetStringChars(value, nullptr);
+    if (chars == nullptr) {
+        return false;
+    }
+
+    std::string result;
+    result.reserve(static_cast<size_t>(length) * 3);
+
+    for (jsize i = 0; i < length; ++i) {
+        uint32_t codepoint = chars[i];
+
+        if (
+            codepoint >= 0xD800 &&
+            codepoint <= 0xDBFF &&
+            i + 1 < length
+        ) {
+            const uint32_t low = chars[i + 1];
+            if (low >= 0xDC00 && low <= 0xDFFF) {
+                codepoint = 0x10000 +
+                    ((codepoint - 0xD800) << 10) +
+                    (low - 0xDC00);
+                ++i;
+            } else {
+                codepoint = 0xFFFD;
+            }
+        } else if (codepoint >= 0xDC00 && codepoint <= 0xDFFF) {
+            codepoint = 0xFFFD;
+        }
+
+        if (codepoint <= 0x7F) {
+            result.push_back(static_cast<char>(codepoint));
+        } else if (codepoint <= 0x7FF) {
+            result.push_back(static_cast<char>(0xC0 | (codepoint >> 6)));
+            result.push_back(static_cast<char>(0x80 | (codepoint & 0x3F)));
+        } else if (codepoint <= 0xFFFF) {
+            result.push_back(static_cast<char>(0xE0 | (codepoint >> 12)));
+            result.push_back(static_cast<char>(
+                0x80 | ((codepoint >> 6) & 0x3F)
+            ));
+            result.push_back(static_cast<char>(0x80 | (codepoint & 0x3F)));
+        } else {
+            result.push_back(static_cast<char>(0xF0 | (codepoint >> 18)));
+            result.push_back(static_cast<char>(
+                0x80 | ((codepoint >> 12) & 0x3F)
+            ));
+            result.push_back(static_cast<char>(
+                0x80 | ((codepoint >> 6) & 0x3F)
+            ));
+            result.push_back(static_cast<char>(0x80 | (codepoint & 0x3F)));
+        }
+    }
+
+    env->ReleaseStringChars(value, chars);
+    *output = std::move(result);
+    return true;
+}
+
 jstring utf8_to_jstring(JNIEnv* env, const std::string& value) {
     std::vector<jchar> utf16;
     utf16.reserve(value.size());
@@ -225,13 +292,10 @@ Java_com_orbi_edgenode_NativeBridge_loadModelNative(
         return env->NewStringUTF("ERROR: MODEL_PATH_NULL");
     }
 
-    const char* path_chars = env->GetStringUTFChars(model_path, nullptr);
-    if (path_chars == nullptr) {
+    std::string path;
+    if (!jstring_to_utf8(env, model_path, &path)) {
         return env->NewStringUTF("ERROR: MODEL_PATH_UTF8");
     }
-
-    const std::string path(path_chars);
-    env->ReleaseStringUTFChars(model_path, path_chars);
 
     unload_locked();
 
@@ -279,13 +343,10 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
         return env->NewStringUTF("ERROR: PROMPT_NULL");
     }
 
-    const char* prompt_chars = env->GetStringUTFChars(prompt_value, nullptr);
-    if (prompt_chars == nullptr) {
+    std::string user_prompt;
+    if (!jstring_to_utf8(env, prompt_value, &user_prompt)) {
         return env->NewStringUTF("ERROR: PROMPT_UTF8");
     }
-
-    const std::string user_prompt(prompt_chars);
-    env->ReleaseStringUTFChars(prompt_value, prompt_chars);
 
     std::string prompt;
     if (!format_single_user_chat(g_model, user_prompt, &prompt)) {
