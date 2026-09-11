@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "notes": [
+    "These are synthetic placeholders for harness validation only.",
+    "Do not use them as claims about actual ORBI hardware.",
+    "Replace all values with measured Node-01/02/03 data before drawing conclusions."
+  ],
+  "scenarios": [
+    {
+      "name": "synthetic-small-payload-fast-remote",
+      "payload_bytes_each_direction": 65536,
+      "local_compute_ms": 1000.0,
+      "remote_compute_ms": 500.0,
+      "orchestration_overhead_ms": 10.0
+    },
+    {
+      "name": "synthetic-large-payload-network-bound",
+      "payload_bytes_each_direction": 8388608,
+      "local_compute_ms": 1000.0,
+      "remote_compute_ms": 500.0,
+      "orchestration_overhead_ms": 10.0
+    }
+  ]
+}
