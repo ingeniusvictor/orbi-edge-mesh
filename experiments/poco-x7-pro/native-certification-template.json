@@ -1,0 +1,33 @@
+{
+  "schema_version": "0.1",
+  "node": "Node-01",
+  "device": "POCO X7 Pro",
+  "candidate": {
+    "branch": "",
+    "commit": "",
+    "app_version": "",
+    "apk_sha256": ""
+  },
+  "start": {
+    "battery_percent": null,
+    "manual_thermal_observation": "",
+    "termux_inference_stopped": false
+  },
+  "gates": {
+    "N0": {"status": "PENDING", "notes": ""},
+    "N1": {"status": "PENDING", "notes": ""},
+    "N2": {"status": "PENDING", "notes": ""},
+    "N3": {"status": "PENDING", "notes": ""},
+    "N4": {"status": "PENDING", "notes": ""},
+    "N5": {"status": "PENDING", "notes": ""},
+    "N6": {"status": "PENDING", "notes": ""},
+    "N7": {"status": "PENDING", "notes": ""},
+    "N8": {"status": "PENDING", "notes": ""},
+    "N9": {"status": "PENDING", "notes": ""}
+  },
+  "end": {
+    "battery_percent": null,
+    "manual_thermal_observation": ""
+  },
+  "secrets_included": false
+}
