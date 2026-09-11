@@ -39,7 +39,21 @@ Do not mark a value correct merely because it is present. Compare battery/storag
 
 ## 5. N3 model import
 
-Use the system document picker and select the exact reference file:
+The proven GGUF currently lives inside Termux private storage, which the Android document picker cannot normally browse directly.
+
+Before the first native import, expose a **copy** in shared Downloads from a second Termux session:
+
+```bash
+termux-setup-storage
+cp ~/models/Qwen3-1.7B-Q4_K_M.gguf ~/storage/downloads/
+sha256sum ~/storage/downloads/Qwen3-1.7B-Q4_K_M.gguf
+```
+
+Android may ask Termux for shared-storage permission the first time `termux-setup-storage` is used.
+
+Do not delete the proven Termux reference copy yet.
+
+Then use the ORBI Edge Node system document picker and select the shared Downloads copy:
 
 `Qwen3-1.7B-Q4_K_M.gguf`
 
