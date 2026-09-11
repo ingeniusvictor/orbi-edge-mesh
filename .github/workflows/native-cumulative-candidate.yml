@@ -7,6 +7,8 @@ on:
     paths:
       - "android/edge-node-native/**"
       - "manager/**"
+      - "models/**"
+      - "config/**"
       - "scripts/pc/**"
       - "research/**"
       - "tests/**"
@@ -44,9 +46,22 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Compile Python research tooling
+        run: |
+          python -m py_compile manager/native_mesh_manager.py
+          python -m py_compile manager/native_model_placement.py
+          python -m py_compile research/distributed_feasibility.py
+          python -m py_compile scripts/pc/orbi_signed_chat.py
+          python -m py_compile scripts/pc/native_headless_probe.py
+
       - name: Run manager and research tests
         run: |
-          python -m unittest -v             tests.test_orbi_signed_chat             tests.test_native_mesh_manager             tests.test_native_model_placement             tests.test_distributed_feasibility             tests.test_native_headless_probe
+          python -m unittest -v \
+            tests.test_orbi_signed_chat \
+            tests.test_native_mesh_manager \
+            tests.test_native_model_placement \
+            tests.test_distributed_feasibility \
+            tests.test_native_headless_probe
 
       - name: Run Android unit tests
         working-directory: android/edge-node-native
