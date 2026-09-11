@@ -65,6 +65,9 @@ private fun NodeStatusScreen(
         EdgeNodeRuntime.initialize(context.applicationContext)
         NodeConfigStore(context.applicationContext)
     }
+    val pairingManager = remember {
+        PairingManager(context.applicationContext)
+    }
 
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
     var resourceDecision by remember {
@@ -83,6 +86,13 @@ private fun NodeStatusScreen(
             )
             delay(1_000)
         }
+    }
+
+    var pairingToken by remember { mutableStateOf<String?>(null) }
+    var pairingStatus by remember {
+        mutableStateOf(
+            if (pairingManager.hasPairingSecret()) "PAIRED" else "NOT PAIRED"
+        )
     }
 
     var serviceStatus by remember { mutableStateOf("STOPPED") }
@@ -267,6 +277,45 @@ private fun NodeStatusScreen(
         }
 
         HorizontalDivider()
+        Text("Local trust / pairing", style = MaterialTheme.typography.titleMedium)
+        Text("Node ID: ${pairingManager.nodeId}")
+        Text("Pairing state: $pairingStatus")
+        Text(
+            "The pairing token is a local research secret. Share it only with the trusted ORBI manager that should control this node.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        if (!pairingToken.isNullOrBlank()) {
+            Text("Pairing token (copy now): $pairingToken")
+        }
+
+        Button(
+            onClick = {
+                pairingToken = pairingManager.rotatePairingToken()
+                pairingStatus = "PAIRED"
+            },
+        ) {
+            Text(
+                if (pairingManager.hasPairingSecret()) {
+                    "Rotate pairing token"
+                } else {
+                    "Generate pairing token"
+                }
+            )
+        }
+
+        Button(
+            enabled = pairingManager.hasPairingSecret(),
+            onClick = {
+                pairingManager.revokePairing()
+                pairingToken = null
+                pairingStatus = "REVOKED / NOT PAIRED"
+            },
+        ) {
+            Text("Revoke pairing")
+        }
+
+        HorizontalDivider()
         Text("Trusted-LAN API", style = MaterialTheme.typography.titleMedium)
         Text("API state: $apiStatus")
         Text(
@@ -350,7 +399,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "N8 gates inference and automatic recovery using Android-observable thermal and battery signals. Physical policy calibration is still required.",
+            "N9 requires explicit signed pairing for privileged chat inference. Physical pairing, replay and revocation tests remain required.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
