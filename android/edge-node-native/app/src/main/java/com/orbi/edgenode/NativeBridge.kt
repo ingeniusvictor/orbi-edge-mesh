@@ -18,6 +18,7 @@ object NativeBridge {
         maxTokens: Int,
     ): String
     private external fun unloadModelNative(): String
+    private external fun lastGenerationMetricsNative(): String
 
     fun status(): String {
         if (!loaded) return "JNI BRIDGE NOT LOADED"
@@ -59,6 +60,12 @@ object NativeBridge {
         }.getOrElse {
             "ERROR: GENERATION_EXCEPTION_${it.javaClass.simpleName}"
         }
+    }
+
+    fun lastGenerationMetrics(): String {
+        if (!loaded) return "metrics unavailable: JNI bridge not loaded"
+        return runCatching { lastGenerationMetricsNative() }
+            .getOrElse { "metrics unavailable: ${it.javaClass.simpleName}" }
     }
 
     fun unloadModel(): String {
