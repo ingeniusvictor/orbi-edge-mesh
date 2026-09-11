@@ -1,6 +1,50 @@
 #include <jni.h>
 
+#include <algorithm>
+#include <mutex>
+#include <string>
+#include <vector>
+
 #include "llama.h"
+
+namespace {
+
+std::mutex g_mutex;
+llama_model* g_model = nullptr;
+int g_context_size = 4096;
+int g_threads = 4;
+
+jstring to_jstring(JNIEnv* env, const std::string& value) {
+    return env->NewStringUTF(value.c_str());
+}
+
+std::string token_piece(const llama_vocab* vocab, llama_token token) {
+    char small[256];
+    int n = llama_token_to_piece(vocab, token, small, sizeof(small), 0, true);
+
+    if (n >= 0) {
+        return std::string(small, static_cast<size_t>(n));
+    }
+
+    const int required = -n;
+    std::vector<char> large(static_cast<size_t>(required));
+    n = llama_token_to_piece(vocab, token, large.data(), large.size(), 0, true);
+
+    if (n < 0) {
+        return {};
+    }
+
+    return std::string(large.data(), static_cast<size_t>(n));
+}
+
+void unload_locked() {
+    if (g_model != nullptr) {
+        llama_model_free(g_model);
+        g_model = nullptr;
+    }
+}
+
+}  // namespace
 
 extern "C"
 JNIEXPORT jstring JNICALL
@@ -22,4 +66,196 @@ Java_com_orbi_edgenode_NativeBridge_llamaSystemInfoNative(
         return env->NewStringUTF("LLAMA LINKED; SYSTEM INFO UNAVAILABLE");
     }
     return env->NewStringUTF(info);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_orbi_edgenode_NativeBridge_loadModelNative(
+    JNIEnv* env,
+    jobject /* thiz */,
+    jstring model_path,
+    jint context_size,
+    jint threads
+) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+
+    if (model_path == nullptr) {
+        return env->NewStringUTF("ERROR: MODEL_PATH_NULL");
+    }
+
+    const char* path_chars = env->GetStringUTFChars(model_path, nullptr);
+    if (path_chars == nullptr) {
+        return env->NewStringUTF("ERROR: MODEL_PATH_UTF8");
+    }
+
+    const std::string path(path_chars);
+    env->ReleaseStringUTFChars(model_path, path_chars);
+
+    unload_locked();
+
+    ggml_backend_load_all();
+
+    llama_model_params params = llama_model_default_params();
+    params.n_gpu_layers = 0;
+
+    g_model = llama_model_load_from_file(path.c_str(), params);
+    if (g_model == nullptr) {
+        return env->NewStringUTF("ERROR: MODEL_LOAD_FAILED");
+    }
+
+    g_context_size = std::max(512, static_cast<int>(context_size));
+    g_threads = std::max(1, static_cast<int>(threads));
+
+    return env->NewStringUTF("MODEL LOADED");
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_orbi_edgenode_NativeBridge_isModelLoadedNative(
+    JNIEnv* /* env */,
+    jobject /* thiz */
+) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    return g_model != nullptr ? JNI_TRUE : JNI_FALSE;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_orbi_edgenode_NativeBridge_generateNative(
+    JNIEnv* env,
+    jobject /* thiz */,
+    jstring prompt_value,
+    jint requested_max_tokens
+) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+
+    if (g_model == nullptr) {
+        return env->NewStringUTF("ERROR: MODEL_NOT_LOADED");
+    }
+
+    if (prompt_value == nullptr) {
+        return env->NewStringUTF("ERROR: PROMPT_NULL");
+    }
+
+    const char* prompt_chars = env->GetStringUTFChars(prompt_value, nullptr);
+    if (prompt_chars == nullptr) {
+        return env->NewStringUTF("ERROR: PROMPT_UTF8");
+    }
+
+    const std::string prompt(prompt_chars);
+    env->ReleaseStringUTFChars(prompt_value, prompt_chars);
+
+    const llama_vocab* vocab = llama_model_get_vocab(g_model);
+    if (vocab == nullptr) {
+        return env->NewStringUTF("ERROR: VOCAB_UNAVAILABLE");
+    }
+
+    const int token_count_result = llama_tokenize(
+        vocab,
+        prompt.c_str(),
+        static_cast<int32_t>(prompt.size()),
+        nullptr,
+        0,
+        true,
+        true
+    );
+
+    if (token_count_result >= 0) {
+        return env->NewStringUTF("ERROR: TOKEN_COUNT_UNEXPECTED");
+    }
+
+    const int n_prompt = -token_count_result;
+    if (n_prompt <= 0) {
+        return env->NewStringUTF("ERROR: EMPTY_TOKENIZATION");
+    }
+
+    std::vector<llama_token> prompt_tokens(static_cast<size_t>(n_prompt));
+    const int tokenized = llama_tokenize(
+        vocab,
+        prompt.c_str(),
+        static_cast<int32_t>(prompt.size()),
+        prompt_tokens.data(),
+        static_cast<int32_t>(prompt_tokens.size()),
+        true,
+        true
+    );
+
+    if (tokenized < 0) {
+        return env->NewStringUTF("ERROR: TOKENIZATION_FAILED");
+    }
+
+    const int max_possible = g_context_size - n_prompt - 1;
+    const int max_tokens = std::min(
+        std::max(1, static_cast<int>(requested_max_tokens)),
+        max_possible
+    );
+
+    if (max_tokens <= 0) {
+        return env->NewStringUTF("ERROR: CONTEXT_TOO_SMALL");
+    }
+
+    llama_context_params ctx_params = llama_context_default_params();
+    ctx_params.n_ctx = static_cast<uint32_t>(g_context_size);
+    ctx_params.n_batch = static_cast<uint32_t>(
+        std::max(32, std::min(g_context_size, n_prompt))
+    );
+    ctx_params.n_threads = g_threads;
+    ctx_params.n_threads_batch = g_threads;
+    ctx_params.no_perf = false;
+
+    llama_context* ctx = llama_init_from_model(g_model, ctx_params);
+    if (ctx == nullptr) {
+        return env->NewStringUTF("ERROR: CONTEXT_CREATE_FAILED");
+    }
+
+    llama_sampler_chain_params sampler_params = llama_sampler_chain_default_params();
+    sampler_params.no_perf = false;
+
+    llama_sampler* sampler = llama_sampler_chain_init(sampler_params);
+    if (sampler == nullptr) {
+        llama_free(ctx);
+        return env->NewStringUTF("ERROR: SAMPLER_CREATE_FAILED");
+    }
+
+    llama_sampler_chain_add(sampler, llama_sampler_init_greedy());
+
+    llama_batch batch = llama_batch_get_one(
+        prompt_tokens.data(),
+        static_cast<int32_t>(prompt_tokens.size())
+    );
+
+    std::string output;
+
+    for (int generated = 0; generated < max_tokens; ++generated) {
+        if (llama_decode(ctx, batch) != 0) {
+            llama_sampler_free(sampler);
+            llama_free(ctx);
+            return env->NewStringUTF("ERROR: DECODE_FAILED");
+        }
+
+        const llama_token token = llama_sampler_sample(sampler, ctx, -1);
+
+        if (llama_vocab_is_eog(vocab, token)) {
+            break;
+        }
+
+        output += token_piece(vocab, token);
+        batch = llama_batch_get_one(&token, 1);
+    }
+
+    llama_sampler_free(sampler);
+    llama_free(ctx);
+
+    return to_jstring(env, output);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_orbi_edgenode_NativeBridge_unloadModelNative(
+    JNIEnv* env,
+    jobject /* thiz */
+) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    unload_locked();
+    return env->NewStringUTF("MODEL UNLOADED");
 }
