@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1",
+  "nodes": [
+    {
+      "name": "Node-01-POCO-X7-Pro",
+      "host": "192.168.1.7",
+      "port": 8080,
+      "node_id": "NODE01_ID_HERE",
+      "token_env": "ORBI_NODE01_TOKEN"
+    },
+    {
+      "name": "Node-02-Xiaomi-11T-Pro",
+      "host": "NODE02_IP_HERE",
+      "port": 8080,
+      "node_id": "NODE02_ID_HERE",
+      "token_env": "ORBI_NODE02_TOKEN"
+    },
+    {
+      "name": "Node-03-Mi-10T-Lite",
+      "host": "NODE03_IP_HERE",
+      "port": 8080,
+      "node_id": "NODE03_ID_HERE",
+      "token_env": "ORBI_NODE03_TOKEN"
+    }
+  ]
+}

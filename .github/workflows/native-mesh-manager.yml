@@ -1,0 +1,43 @@
+name: Native Mesh Manager
+
+on:
+  push:
+    branches:
+      - feature/native-n9-trust-prep
+      - feature/native-n10-mesh-prep
+    paths:
+      - "manager/**"
+      - "scripts/pc/orbi_signed_chat.py"
+      - "tests/test_orbi_signed_chat.py"
+      - "tests/test_native_mesh_manager.py"
+      - ".github/workflows/native-mesh-manager.yml"
+  pull_request:
+    paths:
+      - "manager/**"
+      - "scripts/pc/orbi_signed_chat.py"
+      - "tests/test_orbi_signed_chat.py"
+      - "tests/test_native_mesh_manager.py"
+      - ".github/workflows/native-mesh-manager.yml"
+
+jobs:
+  test-manager:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile manager and signed client
+        run: |
+          python -m py_compile manager/native_mesh_manager.py
+          python -m py_compile scripts/pc/orbi_signed_chat.py
+
+      - name: Run trust and routing tests
+        run: |
+          python -m unittest -v             tests.test_orbi_signed_chat             tests.test_native_mesh_manager
