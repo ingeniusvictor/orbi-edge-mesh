@@ -8,6 +8,8 @@ import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.ByteArrayOutputStream
+import java.net.Inet4Address
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
@@ -30,14 +32,14 @@ class LocalApiServer(
     @Synchronized
     fun start(): String {
         if (running.get()) return "ALREADY RUNNING :$port"
-        if (!hasTrustedLanTransport()) {
-            return "ERROR: WIFI_OR_ETHERNET_REQUIRED"
-        }
+
+        val bindAddress = resolveTrustedLanBindAddress()
+            ?: return "ERROR: WIFI_OR_ETHERNET_IPV4_REQUIRED"
 
         return try {
             val socket = ServerSocket()
             socket.reuseAddress = true
-            socket.bind(InetSocketAddress("0.0.0.0", port))
+            socket.bind(InetSocketAddress(bindAddress, port))
 
             val executor = Executors.newCachedThreadPool()
             serverSocket = socket
@@ -329,15 +331,26 @@ class LocalApiServer(
         writeJson(output, 200, completion)
     }
 
-    private fun hasTrustedLanTransport(): Boolean {
+    private fun resolveTrustedLanBindAddress(): InetAddress? {
         return runCatching {
             val manager = context.getSystemService(ConnectivityManager::class.java)
-            val network = manager.activeNetwork ?: return false
-            val capabilities = manager.getNetworkCapabilities(network) ?: return false
+            val network = manager.activeNetwork ?: return null
+            val capabilities = manager.getNetworkCapabilities(network)
+                ?: return null
 
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
-        }.getOrDefault(false)
+            val trustedTransport =
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+
+            if (!trustedTransport) return null
+
+            manager.getLinkProperties(network)
+                ?.linkAddresses
+                ?.asSequence()
+                ?.map { it.address }
+                ?.filterIsInstance<Inet4Address>()
+                ?.firstOrNull { !it.isLoopbackAddress }
+        }.getOrNull()
     }
 
     private fun readLine(input: BufferedInputStream): String? {
