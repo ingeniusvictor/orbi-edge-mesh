@@ -13,8 +13,8 @@ android {
         applicationId = "com.orbi.edgenode"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.4.0-n4-prep"
+        versionCode = 6
+        versionName = "0.5.0-n5-prep"
 
         ndk {
             abiFilters += listOf("arm64-v8a")
