@@ -21,6 +21,10 @@ class EdgeNodeSupervisor(
 
     @Volatile
     private var lastAction = "NOT STARTED"
+        set(value) {
+            field = value
+            SupervisorMonitor.publish(snapshot())
+        }
 
     @Synchronized
     fun start() {
