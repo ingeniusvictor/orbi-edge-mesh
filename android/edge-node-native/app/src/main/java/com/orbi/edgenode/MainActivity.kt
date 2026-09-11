@@ -161,9 +161,11 @@ private fun NodeStatusScreen(
 
         Text("Research build: ${BuildConfig.VERSION_NAME}")
         Text("Source: ${BuildConfig.GIT_SHA.take(12)}")
-        Text("Device: ${snapshot.model}")
-        Text("Android: ${snapshot.androidVersion}")
+        Text("Manufacturer: ${snapshot.manufacturer}")
+        Text("Device: ${snapshot.model} (${snapshot.device})")
+        Text("Android: ${snapshot.androidVersion} / API ${snapshot.apiLevel}")
         Text("ABI: ${snapshot.abi}")
+        Text("CPU logical processors: ${snapshot.availableProcessors}")
         Text("Native runtime: $nativeStatus")
         Text("llama.cpp link: READY")
         Text("llama.cpp info: $llamaSystemInfo")
