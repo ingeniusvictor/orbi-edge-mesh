@@ -42,6 +42,10 @@ class NodeState:
     paired: bool = False
     battery_percent: int | None = None
     thermal_status: str | None = None
+    memory_total_bytes: int | None = None
+    memory_available_bytes: int | None = None
+    storage_total_bytes: int | None = None
+    storage_available_bytes: int | None = None
     reported_node_id: str | None = None
     services_supported: tuple[str, ...] = ()
     model_ids: tuple[str, ...] = ()
@@ -111,6 +115,10 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
         paired=bool(node.get("paired", False)),
         battery_percent=node.get("battery_percent"),
         thermal_status=node.get("thermal_status"),
+        memory_total_bytes=node.get("memory_total_bytes"),
+        memory_available_bytes=node.get("memory_available_bytes"),
+        storage_total_bytes=node.get("storage_total_bytes"),
+        storage_available_bytes=node.get("storage_available_bytes"),
         reported_node_id=reported_node_id,
         services_supported=services_supported,
         model_ids=model_ids,
