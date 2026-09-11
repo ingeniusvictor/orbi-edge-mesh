@@ -3,7 +3,9 @@ package com.orbi.edgenode
 import android.content.Context
 import android.net.Uri
 import java.io.File
-import java.io.FileInputStream
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 
 class ModelImporter(
@@ -60,20 +62,19 @@ class ModelImporter(
                 )
             }
 
-            if (finalFile.exists() && !finalFile.delete()) {
-                partial.delete()
-                return ModelImportResult.Failure(
-                    code = "MODEL_REPLACE_FAILED",
-                    message = "Existing model could not be replaced.",
+            try {
+                Files.move(
+                    partial.toPath(),
+                    finalFile.toPath(),
+                    StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING,
                 )
-            }
-
-            val moved = partial.renameTo(finalFile)
-            if (!moved) {
-                FileInputStream(partial).use { source ->
-                    finalFile.outputStream().use { sink -> source.copyTo(sink) }
-                }
-                partial.delete()
+            } catch (_: AtomicMoveNotSupportedException) {
+                Files.move(
+                    partial.toPath(),
+                    finalFile.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING,
+                )
             }
 
             ModelImportResult.Success(
