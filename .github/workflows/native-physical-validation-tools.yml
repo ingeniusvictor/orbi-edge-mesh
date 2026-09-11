@@ -8,6 +8,7 @@ on:
       - "scripts/pc/native_node01_certify.py"
       - "scripts/pc/native_headless_probe.py"
       - "scripts/pc/orbi_signed_chat.py"
+      - "scripts/android/export_reference_model_to_downloads.sh"
       - "tests/test_native_node01_certify.py"
       - "tests/test_native_headless_probe.py"
       - "tests/test_orbi_signed_chat.py"
@@ -32,6 +33,9 @@ jobs:
           python -m py_compile scripts/pc/orbi_signed_chat.py
           python -m py_compile scripts/pc/native_headless_probe.py
           python -m py_compile scripts/pc/native_node01_certify.py
+
+      - name: Check Android validation helper syntax
+        run: bash -n scripts/android/export_reference_model_to_downloads.sh
 
       - name: Run validation tool tests
         run: |
