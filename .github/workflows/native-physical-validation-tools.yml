@@ -9,6 +9,7 @@ on:
       - "scripts/pc/native_headless_probe.py"
       - "scripts/pc/orbi_signed_chat.py"
       - "scripts/android/export_reference_model_to_downloads.sh"
+      - "scripts/pc/install_native_candidate.ps1"
       - "tests/test_native_node01_certify.py"
       - "tests/test_native_headless_probe.py"
       - "tests/test_orbi_signed_chat.py"
@@ -36,6 +37,15 @@ jobs:
 
       - name: Check Android validation helper syntax
         run: bash -n scripts/android/export_reference_model_to_downloads.sh
+
+      - name: Parse Windows installer script
+        shell: pwsh
+        run: |
+          $null = [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path "scripts/pc/install_native_candidate.ps1"),
+            [ref]$null,
+            [ref]$null
+          )
 
       - name: Run validation tool tests
         run: |
