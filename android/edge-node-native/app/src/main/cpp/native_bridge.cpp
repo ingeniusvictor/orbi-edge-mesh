@@ -14,8 +14,88 @@ llama_model* g_model = nullptr;
 int g_context_size = 4096;
 int g_threads = 4;
 
-jstring to_jstring(JNIEnv* env, const std::string& value) {
-    return env->NewStringUTF(value.c_str());
+jstring utf8_to_jstring(JNIEnv* env, const std::string& value) {
+    std::vector<jchar> utf16;
+    utf16.reserve(value.size());
+
+    const auto replacement = [&utf16]() {
+        utf16.push_back(static_cast<jchar>(0xFFFD));
+    };
+
+    for (size_t i = 0; i < value.size();) {
+        const unsigned char lead = static_cast<unsigned char>(value[i]);
+        uint32_t codepoint = 0;
+        size_t length = 0;
+        uint32_t minimum = 0;
+
+        if (lead <= 0x7F) {
+            codepoint = lead;
+            length = 1;
+            minimum = 0;
+        } else if ((lead & 0xE0) == 0xC0) {
+            codepoint = lead & 0x1F;
+            length = 2;
+            minimum = 0x80;
+        } else if ((lead & 0xF0) == 0xE0) {
+            codepoint = lead & 0x0F;
+            length = 3;
+            minimum = 0x800;
+        } else if ((lead & 0xF8) == 0xF0) {
+            codepoint = lead & 0x07;
+            length = 4;
+            minimum = 0x10000;
+        } else {
+            replacement();
+            ++i;
+            continue;
+        }
+
+        if (i + length > value.size()) {
+            replacement();
+            break;
+        }
+
+        bool valid = true;
+        for (size_t offset = 1; offset < length; ++offset) {
+            const unsigned char continuation =
+                static_cast<unsigned char>(value[i + offset]);
+            if ((continuation & 0xC0) != 0x80) {
+                valid = false;
+                break;
+            }
+            codepoint = (codepoint << 6) | (continuation & 0x3F);
+        }
+
+        if (
+            !valid ||
+            codepoint < minimum ||
+            codepoint > 0x10FFFF ||
+            (codepoint >= 0xD800 && codepoint <= 0xDFFF)
+        ) {
+            replacement();
+            ++i;
+            continue;
+        }
+
+        if (codepoint <= 0xFFFF) {
+            utf16.push_back(static_cast<jchar>(codepoint));
+        } else {
+            codepoint -= 0x10000;
+            utf16.push_back(
+                static_cast<jchar>(0xD800 + ((codepoint >> 10) & 0x3FF))
+            );
+            utf16.push_back(
+                static_cast<jchar>(0xDC00 + (codepoint & 0x3FF))
+            );
+        }
+
+        i += length;
+    }
+
+    return env->NewString(
+        utf16.empty() ? nullptr : utf16.data(),
+        static_cast<jsize>(utf16.size())
+    );
 }
 
 std::string token_piece(const llama_vocab* vocab, llama_token token) {
@@ -246,7 +326,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     llama_sampler_free(sampler);
     llama_free(ctx);
 
-    return to_jstring(env, output);
+    return utf8_to_jstring(env, output);
 }
 
 extern "C"
