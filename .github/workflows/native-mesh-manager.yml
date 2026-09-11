@@ -16,13 +16,22 @@ on:
       - "scripts/pc/native_headless_probe.py"
       - "tests/test_orbi_signed_chat.py"
       - "tests/test_native_mesh_manager.py"
+      - "tests/test_native_model_placement.py"
+      - "tests/test_distributed_feasibility.py"
+      - "tests/test_native_headless_probe.py"
       - ".github/workflows/native-mesh-manager.yml"
   pull_request:
     paths:
       - "manager/**"
+      - "models/native-model-catalog.example.json"
+      - "research/**"
       - "scripts/pc/orbi_signed_chat.py"
+      - "scripts/pc/native_headless_probe.py"
       - "tests/test_orbi_signed_chat.py"
       - "tests/test_native_mesh_manager.py"
+      - "tests/test_native_model_placement.py"
+      - "tests/test_distributed_feasibility.py"
+      - "tests/test_native_headless_probe.py"
       - ".github/workflows/native-mesh-manager.yml"
 
 jobs:
@@ -39,7 +48,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Compile manager and signed client
+      - name: Compile manager, validation and research scripts
         run: |
           python -m py_compile manager/native_mesh_manager.py
           python -m py_compile manager/native_model_placement.py
@@ -47,9 +56,11 @@ jobs:
           python -m py_compile scripts/pc/orbi_signed_chat.py
           python -m py_compile scripts/pc/native_headless_probe.py
 
-      - name: Run trust and routing tests
+      - name: Run native manager, trust and research tests
         run: |
-          python -m unittest -v             tests.test_orbi_signed_chat             tests.test_native_mesh_manager \
+          python -m unittest -v \
+            tests.test_orbi_signed_chat \
+            tests.test_native_mesh_manager \
             tests.test_native_model_placement \
             tests.test_distributed_feasibility \
             tests.test_native_headless_probe
