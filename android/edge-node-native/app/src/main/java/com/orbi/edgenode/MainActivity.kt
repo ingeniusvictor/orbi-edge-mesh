@@ -118,6 +118,7 @@ private fun NodeStatusScreen(
     var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
     var inferenceStatus by remember { mutableStateOf("NOT RUN") }
     var responseText by remember { mutableStateOf("") }
+    var generationMetrics by remember { mutableStateOf("NOT RUN") }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -271,6 +272,7 @@ private fun NodeStatusScreen(
                         )
                     }
                     responseText = response
+                    generationMetrics = NativeBridge.lastGenerationMetrics()
                     inferenceStatus = if (response.startsWith("ERROR:")) {
                         "FAIL"
                     } else {
@@ -415,6 +417,7 @@ private fun NodeStatusScreen(
             HorizontalDivider()
             Text("Native Qwen response", style = MaterialTheme.typography.titleMedium)
             Text(responseText)
+            Text("Generation metrics: $generationMetrics")
         }
 
         Text(
