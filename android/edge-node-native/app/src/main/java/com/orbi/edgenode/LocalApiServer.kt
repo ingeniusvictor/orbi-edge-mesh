@@ -151,6 +151,8 @@ class LocalApiServer(
             method == "GET" && path == "/node" -> {
                 val device = DeviceProfiler.snapshot()
                 val health = NodeTelemetryProvider(context).snapshot()
+                val policy = NodeResourcePolicy.evaluate(health)
+                val supervisor = SupervisorMonitor.current
                 val json = JSONObject()
                     .put("service", "orbi-edge-node")
                     .put("device_model", device.model)
@@ -159,6 +161,12 @@ class LocalApiServer(
                     .put("battery_percent", health.battery.percent ?: JSONObject.NULL)
                     .put("thermal_status", health.thermal.status ?: JSONObject.NULL)
                     .put("model_loaded", NativeBridge.isModelLoaded())
+                    .put("resource_action", policy.action.name)
+                    .put("resource_reason", policy.reason)
+                    .put("supervisor_running", supervisor.running)
+                    .put("supervisor_restart_attempts", supervisor.restartAttempts)
+                    .put("supervisor_quarantined", supervisor.quarantined)
+                    .put("supervisor_last_action", supervisor.lastAction)
                 writeJson(output, 200, json)
             }
 
@@ -228,8 +236,25 @@ class LocalApiServer(
             return
         }
 
+        val policy = NodeResourcePolicy.evaluate(
+            NodeTelemetryProvider(context).snapshot()
+        )
+
+        if (policy.action == ResourceAction.BLOCK) {
+            writeJson(
+                output,
+                503,
+                errorJson(
+                    "resource_protected",
+                    "ORBI resource policy blocked inference: ${policy.reason}",
+                ),
+            )
+            return
+        }
+
         val requested = request.optInt("max_tokens", 96)
-        val maxTokens = requested.coerceIn(1, 256)
+        val ceiling = if (policy.action == ResourceAction.DEGRADE) 64 else 256
+        val maxTokens = requested.coerceIn(1, ceiling)
         val response = NativeBridge.generate(prompt, maxTokens)
 
         if (response.startsWith("ERROR:")) {
