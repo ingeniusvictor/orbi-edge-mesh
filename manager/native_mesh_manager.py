@@ -195,10 +195,10 @@ def sign_headers(config: NodeConfig, method: str, path: str, body: bytes) -> dic
     }
 
 
-def execute_chat(state: NodeState, prompt: str, max_tokens: int, timeout: float) -> dict[str, Any]:
+def execute_chat(state: NodeState, prompt: str, max_tokens: int, timeout: float, model_id: str) -> dict[str, Any]:
     path = "/v1/chat/completions"
     payload = {
-        "model": next(iter(state.model_ids), "qwen3-1.7b-q4_k_m-node01"),
+        "model": model_id,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max(1, min(max_tokens, 256)),
         "stream": False,
@@ -266,6 +266,7 @@ def main() -> int:
                 args.prompt,
                 args.max_tokens,
                 max(args.timeout, 90.0),
+                args.model_id,
             )
             print(json.dumps({
                 "selected_node": state.config.name,
