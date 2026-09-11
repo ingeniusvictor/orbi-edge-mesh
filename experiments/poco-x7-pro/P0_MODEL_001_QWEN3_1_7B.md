@@ -1,6 +1,6 @@
 # P0 Model 001 — Qwen3 1.7B Q4_K_M
 
-Status: FIRST LOCAL INFERENCE PASS / OFFLINE RE-RUN PENDING
+Status: PASS — LOCAL + OFFLINE INFERENCE CERTIFIED
 
 ## Purpose
 
@@ -79,3 +79,23 @@ Observed model answer:
 ### Remaining gate
 
 Repeat the same inference with Internet access disabled to certify offline execution.
+
+
+## Offline confirmation — 2026-09-10
+
+The same Node-01 smoke test was repeated with Internet connectivity disabled.
+
+Measured evidence:
+
+- llama.cpp commit: df03399b885831b2a1603b3abb0d8c156808e363
+- model: Qwen3 1.7B Q4_K_M
+- context: 4096
+- threads: 4
+- prompt processing: 61.4 tokens/s
+- generation: 18.7 tokens/s
+- result: coherent Spanish response generated successfully
+- Internet dependency: none observed during inference
+
+### Gate result
+
+PASS — Node-01 can execute the first Phase 0 model locally and offline.
