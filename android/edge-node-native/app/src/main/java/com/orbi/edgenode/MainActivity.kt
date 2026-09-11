@@ -1,6 +1,8 @@
 package com.orbi.edgenode
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -84,6 +86,9 @@ private fun NodeStatusScreen(
     val pairingManager = remember {
         PairingManager(context.applicationContext)
     }
+    val clipboardManager = remember {
+        context.getSystemService(ClipboardManager::class.java)
+    }
 
     var telemetrySnapshot by remember { mutableStateOf(telemetry) }
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
@@ -102,6 +107,7 @@ private fun NodeStatusScreen(
     }
 
     var pairingToken by remember { mutableStateOf<String?>(null) }
+    var trustUiMessage by remember { mutableStateOf("") }
     var pairingStatus by remember {
         mutableStateOf(
             if (pairingManager.hasPairingSecret()) "PAIRED" else "NOT PAIRED"
@@ -304,6 +310,19 @@ private fun NodeStatusScreen(
         HorizontalDivider()
         Text("Local trust / pairing", style = MaterialTheme.typography.titleMedium)
         Text("Node ID: ${pairingManager.nodeId}")
+        Button(
+            onClick = {
+                clipboardManager?.setPrimaryClip(
+                    ClipData.newPlainText(
+                        "ORBI Node ID",
+                        pairingManager.nodeId,
+                    )
+                )
+                trustUiMessage = "NODE ID COPIED"
+            },
+        ) {
+            Text("Copy Node ID")
+        }
         Text("Pairing state: $pairingStatus")
         Text(
             "The pairing token is a local research secret. Share it only with the trusted ORBI manager that should control this node.",
@@ -313,10 +332,35 @@ private fun NodeStatusScreen(
         if (!pairingToken.isNullOrBlank()) {
             Text("Pairing token (copy now): $pairingToken")
             Button(
-                onClick = { pairingToken = null },
+                onClick = {
+                    val token = pairingToken ?: return@Button
+                    clipboardManager?.setPrimaryClip(
+                        ClipData.newPlainText(
+                            "ORBI Pairing Token",
+                            token,
+                        )
+                    )
+                    trustUiMessage =
+                        "PAIRING TOKEN COPIED — keep it out of chats/cloud notes"
+                },
+            ) {
+                Text("Copy pairing token")
+            }
+            Button(
+                onClick = {
+                    pairingToken = null
+                    trustUiMessage = "PAIRING TOKEN HIDDEN"
+                },
             ) {
                 Text("Hide pairing token")
             }
+        }
+
+        if (trustUiMessage.isNotBlank()) {
+            Text(
+                trustUiMessage,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
 
         Button(
@@ -340,6 +384,7 @@ private fun NodeStatusScreen(
                 pairingManager.revokePairing()
                 pairingToken = null
                 pairingStatus = "REVOKED / NOT PAIRED"
+                trustUiMessage = "PAIRING REVOKED"
             },
         ) {
             Text("Revoke pairing")
