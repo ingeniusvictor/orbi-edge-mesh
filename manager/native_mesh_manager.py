@@ -43,6 +43,8 @@ class NodeState:
     battery_percent: int | None = None
     thermal_status: str | None = None
     reported_node_id: str | None = None
+    services_supported: tuple[str, ...] = ()
+    model_ids: tuple[str, ...] = ()
     error: str | None = None
 
 
@@ -86,7 +88,19 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
         )
 
     data = models.get("data")
-    has_model = isinstance(data, list) and len(data) > 0
+    model_ids = tuple(
+        str(item.get("id"))
+        for item in data
+        if isinstance(item, dict) and item.get("id")
+    ) if isinstance(data, list) else ()
+    has_model = len(model_ids) > 0
+
+    services_raw = node.get("services_supported")
+    services_supported = tuple(
+        str(item).upper()
+        for item in services_raw
+        if isinstance(item, str)
+    ) if isinstance(services_raw, list) else ()
 
     return NodeState(
         config=config,
@@ -98,6 +112,8 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
         battery_percent=node.get("battery_percent"),
         thermal_status=node.get("thermal_status"),
         reported_node_id=reported_node_id,
+        services_supported=services_supported,
+        model_ids=model_ids,
     )
 
 
@@ -121,7 +137,17 @@ def candidate_rank(state: NodeState) -> tuple[int, int, str]:
     return (action_rank, battery_penalty, state.config.name)
 
 
-def eligible(state: NodeState) -> bool:
+def eligible(
+    state: NodeState,
+    service: str = "CHAT",
+    model_id: str | None = None,
+) -> bool:
+    requested_service = service.upper()
+    if requested_service not in state.services_supported:
+        return False
+    if model_id is not None and model_id not in state.model_ids:
+        return False
+
     return (
         state.reachable
         and state.model_loaded
@@ -169,10 +195,10 @@ def sign_headers(config: NodeConfig, method: str, path: str, body: bytes) -> dic
     }
 
 
-def execute_chat(state: NodeState, prompt: str, max_tokens: int, timeout: float) -> dict[str, Any]:
+def execute_chat(state: NodeState, prompt: str, max_tokens: int, timeout: float, model_id: str) -> dict[str, Any]:
     path = "/v1/chat/completions"
     payload = {
-        "model": "qwen3-1.7b-q4_k_m-node01",
+        "model": model_id,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max(1, min(max_tokens, 256)),
         "stream": False,
@@ -202,6 +228,8 @@ def main() -> int:
         default="Responde en español y en una sola frase: ¿qué es ORBI Edge Mesh?",
     )
     parser.add_argument("--max-tokens", type=int, default=96)
+    parser.add_argument("--service", default="CHAT")
+    parser.add_argument("--model-id", default="qwen3-1.7b-q4_k_m-node01")
     parser.add_argument("--timeout", type=float, default=20.0)
     parser.add_argument("--status-only", action="store_true")
     args = parser.parse_args()
@@ -218,7 +246,14 @@ def main() -> int:
     if args.status_only:
         return 0
 
-    candidates = sorted((state for state in states if eligible(state)), key=candidate_rank)
+    candidates = sorted(
+        (
+            state
+            for state in states
+            if eligible(state, service=args.service, model_id=args.model_id)
+        ),
+        key=candidate_rank,
+    )
     if not candidates:
         print("NO ELIGIBLE NATIVE ORBI NODE", file=sys.stderr)
         return 1
@@ -231,6 +266,7 @@ def main() -> int:
                 args.prompt,
                 args.max_tokens,
                 max(args.timeout, 90.0),
+                args.model_id,
             )
             print(json.dumps({
                 "selected_node": state.config.name,

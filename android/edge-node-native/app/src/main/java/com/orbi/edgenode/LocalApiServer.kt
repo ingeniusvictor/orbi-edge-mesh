@@ -170,6 +170,8 @@ class LocalApiServer(
                     .put("supervisor_last_action", supervisor.lastAction)
                     .put("node_id", pairing.nodeId)
                     .put("paired", pairing.hasPairingSecret())
+                    .put("services_supported", JSONArray().put("CHAT"))
+                    .put("chat_model_id", ReferenceModels.qwen3Node01.id)
                 writeJson(output, 200, json)
             }
 
