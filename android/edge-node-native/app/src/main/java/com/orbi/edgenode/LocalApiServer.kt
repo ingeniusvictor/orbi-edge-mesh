@@ -41,7 +41,7 @@ class LocalApiServer(
             socket.reuseAddress = true
             socket.bind(InetSocketAddress(bindAddress, port))
 
-            val executor = Executors.newCachedThreadPool()
+            val executor = Executors.newFixedThreadPool(MAX_WORKERS)
             serverSocket = socket
             workers = executor
             running.set(true)
@@ -93,7 +93,7 @@ class LocalApiServer(
     }
 
     private fun handleClient(socket: Socket) {
-        socket.soTimeout = 60_000
+        socket.soTimeout = SOCKET_TIMEOUT_MS
 
         val input = BufferedInputStream(socket.getInputStream())
         val output = BufferedOutputStream(socket.getOutputStream())
@@ -111,9 +111,24 @@ class LocalApiServer(
         val path = parts[1].substringBefore('?')
 
         val headers = linkedMapOf<String, String>()
+        var headerCount = 0
         while (true) {
             val line = readLine(input) ?: break
             if (line.isEmpty()) break
+
+            headerCount += 1
+            if (headerCount > MAX_HEADER_COUNT) {
+                writeJson(
+                    output,
+                    431,
+                    errorJson(
+                        "too_many_headers",
+                        "Request exceeds the ORBI research header limit.",
+                    ),
+                )
+                return
+            }
+
             val index = line.indexOf(':')
             if (index > 0) {
                 val name = line.substring(0, index).trim().lowercase(Locale.US)
@@ -383,6 +398,7 @@ class LocalApiServer(
             401 -> "Unauthorized"
             404 -> "Not Found"
             413 -> "Payload Too Large"
+            431 -> "Request Header Fields Too Large"
             500 -> "Internal Server Error"
             503 -> "Service Unavailable"
             else -> "Response"
@@ -419,5 +435,8 @@ class LocalApiServer(
     companion object {
         private const val MAX_BODY_BYTES = 64 * 1024
         private const val MAX_HEADER_LINE_BYTES = 8 * 1024
+        private const val MAX_HEADER_COUNT = 64
+        private const val MAX_WORKERS = 4
+        private const val SOCKET_TIMEOUT_MS = 10_000
     }
 }
