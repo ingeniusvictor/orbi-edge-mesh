@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1",
+  "id": "qwen3-1.7b-q4_k_m-node01",
+  "display_name": "Qwen3 1.7B Q4_K_M",
+  "file_name": "Qwen3-1.7B-Q4_K_M.gguf",
+  "expected_sha256": "d2387ca2dbfee2ffabce7120d3770dadca0b293052bc2f0e138fdc940d9bc7b5",
+  "reference_context": 4096,
+  "reference_threads": 4,
+  "phase0_reference": {
+    "device": "POCO X7 Pro",
+    "local_inference": "PASS",
+    "offline_inference": "PASS",
+    "headless_30min": "PASS"
+  }
+}
