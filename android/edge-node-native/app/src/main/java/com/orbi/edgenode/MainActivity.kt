@@ -1,5 +1,7 @@
 package com.orbi.edgenode
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -17,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,18 +59,18 @@ private fun NodeStatusScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val apiServer = remember { LocalApiServer(context.applicationContext, 8080) }
+    remember {
+        EdgeNodeRuntime.initialize(context.applicationContext)
+        Unit
+    }
 
+    var serviceStatus by remember { mutableStateOf("STOPPED") }
     var apiStatus by remember { mutableStateOf("STOPPED") }
     var modelStatus by remember { mutableStateOf("NOT IMPORTED") }
     var modelPath by remember { mutableStateOf<String?>(null) }
     var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
     var inferenceStatus by remember { mutableStateOf("NOT RUN") }
     var responseText by remember { mutableStateOf("") }
-
-    DisposableEffect(apiServer) {
-        onDispose { apiServer.stop() }
-    }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -223,15 +224,48 @@ private fun NodeStatusScreen(
         )
 
         Button(
-            onClick = { apiStatus = apiServer.start() },
+            onClick = { apiStatus = EdgeNodeRuntime.startApi() },
         ) {
             Text("Start local API")
         }
 
         Button(
-            onClick = { apiStatus = apiServer.stop() },
+            onClick = { apiStatus = EdgeNodeRuntime.stopApi() },
         ) {
             Text("Stop local API")
+        }
+
+        HorizontalDivider()
+        Text("Headless service", style = MaterialTheme.typography.titleMedium)
+        Text("Service state: $serviceStatus")
+        Text(
+            "The foreground service owns a PARTIAL_WAKE_LOCK and keeps the research node eligible to run with the display off.",
+            style = MaterialTheme.typography.bodySmall,
+        )
+
+        Button(
+            onClick = {
+                val intent = Intent(context, EdgeNodeService::class.java)
+                    .setAction(EdgeNodeService.ACTION_START)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+                serviceStatus = "START REQUESTED"
+            },
+        ) {
+            Text("Start headless node service")
+        }
+
+        Button(
+            onClick = {
+                context.stopService(Intent(context, EdgeNodeService::class.java))
+                serviceStatus = "STOP REQUESTED"
+                apiStatus = "STOPPED BY SERVICE"
+            },
+        ) {
+            Text("Stop headless node service")
         }
 
         if (responseText.isNotBlank()) {
@@ -241,7 +275,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "N5 is a trusted-LAN research preview. Physical Node-01 validation is required before any network-runtime claim.",
+            "N6 is a headless research preview. 30-minute screen-off parity remains physically uncertified until tested on Node-01.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
