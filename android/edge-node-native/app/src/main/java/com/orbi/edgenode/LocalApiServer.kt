@@ -245,6 +245,22 @@ class LocalApiServer(
             return
         }
 
+        val requestedModel = request
+            .optString("model", ReferenceModels.qwen3Node01.id)
+            .ifBlank { ReferenceModels.qwen3Node01.id }
+
+        if (requestedModel != ReferenceModels.qwen3Node01.id) {
+            writeJson(
+                output,
+                400,
+                errorJson(
+                    "model_not_available",
+                    "Requested model is not loaded on this ORBI Edge Node.",
+                ),
+            )
+            return
+        }
+
         val messages = request.optJSONArray("messages")
         if (messages == null || messages.length() == 0) {
             writeJson(output, 400, errorJson("invalid_request", "messages[] is required."))
