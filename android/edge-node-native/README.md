@@ -34,3 +34,9 @@ Expected APK:
 - arm64-v8a
 - Native runtime: JNI BRIDGE READY
 - AI runtime: NOT LOADED
+
+## CI
+
+The research branch builds this project in GitHub Actions and publishes the debug APK as the `orbi-edge-node-n0-debug` artifact.
+
+N0 still requires physical Node-01 installation before certification.
