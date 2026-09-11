@@ -1,6 +1,9 @@
 #include <jni.h>
 
 #include <algorithm>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -13,6 +16,8 @@ std::mutex g_mutex;
 llama_model* g_model = nullptr;
 int g_context_size = 4096;
 int g_threads = 4;
+int g_last_generated_tokens = 0;
+double g_last_generation_ms = 0.0;
 
 jstring utf8_to_jstring(JNIEnv* env, const std::string& value) {
     std::vector<jchar> utf16;
@@ -305,6 +310,9 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     );
 
     std::string output;
+    g_last_generated_tokens = 0;
+    g_last_generation_ms = 0.0;
+    const auto generation_start = std::chrono::steady_clock::now();
 
     for (int generated = 0; generated < max_tokens; ++generated) {
         if (llama_decode(ctx, batch) != 0) {
@@ -321,12 +329,40 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
 
         output += token_piece(vocab, token);
         batch = llama_batch_get_one(&token, 1);
+        g_last_generated_tokens += 1;
     }
+
+    const auto generation_end = std::chrono::steady_clock::now();
+    g_last_generation_ms = std::chrono::duration<double, std::milli>(
+        generation_end - generation_start
+    ).count();
 
     llama_sampler_free(sampler);
     llama_free(ctx);
 
     return utf8_to_jstring(env, output);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_orbi_edgenode_NativeBridge_lastGenerationMetricsNative(
+    JNIEnv* env,
+    jobject /* thiz */
+) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+
+    const double seconds = g_last_generation_ms / 1000.0;
+    const double tps = seconds > 0.0
+        ? static_cast<double>(g_last_generated_tokens) / seconds
+        : 0.0;
+
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(3)
+        << "tokens=" << g_last_generated_tokens
+        << "; generation_ms=" << g_last_generation_ms
+        << "; tokens_per_second=" << tps;
+
+    return env->NewStringUTF(out.str().c_str());
 }
 
 extern "C"
