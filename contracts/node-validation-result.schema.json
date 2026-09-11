@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/node-validation-result.schema.json",
+  "title": "ORBI Edge Node Validation Result",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "timestamp",
+    "node_id",
+    "target",
+    "model",
+    "overall",
+    "checks"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "node_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "overall": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "ok",
+          "elapsed_s",
+          "detail"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "elapsed_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

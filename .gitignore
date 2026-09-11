@@ -1,0 +1,27 @@
+# Models
+*.gguf
+models/
+
+# Runtime outputs
+orbi-edge-runs/
+orbi-edge-baselines/
+*.log
+
+# Local configuration
+.env
+*.local.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+runtime/security/
+*.trust.json
+*.pairing-token
+*.pairing-secret

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/model-inventory.schema.json",
+  "title": "ORBI Edge Model Inventory",
+  "type": "object",
+  "required": ["schema_version", "node_id", "models"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "0.1" },
+    "node_id": { "type": "string", "minLength": 1 },
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "model_id",
+          "family",
+          "service_type",
+          "runtime",
+          "status"
+        ],
+        "properties": {
+          "model_id": { "type": "string", "minLength": 1 },
+          "family": { "type": "string", "minLength": 1 },
+          "service_type": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "embedding",
+              "speech_to_text",
+              "text_to_speech",
+              "rerank",
+              "other"
+            ]
+          },
+          "runtime": { "type": "string", "minLength": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["ready", "loaded", "cold", "disabled", "missing"]
+          },
+          "quantization": { "type": ["string", "null"] },
+          "size_bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "path": { "type": ["string", "null"] },
+          "context_max": { "type": ["integer", "null"], "minimum": 1 },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": []
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/model-placement.schema.json",
+  "title": "ORBI Edge Model Placement",
+  "type": "object",
+  "required": [
+    "model_id",
+    "role",
+    "preferred_node_id",
+    "residency"
+  ],
+  "properties": {
+    "model_id": { "type": "string", "minLength": 1 },
+    "role": {
+      "type": "string",
+      "enum": ["primary", "fallback", "specialized", "replica"]
+    },
+    "preferred_node_id": { "type": ["string", "null"] },
+    "residency": {
+      "type": "string",
+      "enum": ["hot", "warm", "cold"]
+    },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

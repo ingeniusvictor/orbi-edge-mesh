@@ -1,0 +1,46 @@
+{
+  "schema_version": "0.1",
+  "node_id": "node-03",
+  "device": {
+    "manufacturer": "Xiaomi",
+    "model": "Mi 10T Lite 5G",
+    "android_version": "TBD",
+    "abi": "arm64-v8a",
+    "soc": "Qualcomm Snapdragon 750G",
+    "gpu": "Adreno 619",
+    "npu": null
+  },
+  "runtime": {
+    "kind": "mock-services",
+    "version": "0.1",
+    "commit": null
+  },
+  "resources": {
+    "physical_ram_mb": 6144,
+    "memory_extension_enabled": null,
+    "memory_extension_mb": null,
+    "storage_total_mb": 262144,
+    "storage_free_mb": 0
+  },
+  "health": {
+    "status": "ready",
+    "battery_percent": 80,
+    "charging": false,
+    "temperature_c": 31.0,
+    "thermal_state": "normal"
+  },
+  "services": [
+    {
+      "type": "speech_to_text",
+      "status": "ready",
+      "model": "mock-whisper",
+      "endpoint": null
+    },
+    {
+      "type": "text_to_speech",
+      "status": "ready",
+      "model": "mock-tts",
+      "endpoint": null
+    }
+  ]
+}

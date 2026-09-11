@@ -1,0 +1,47 @@
+[
+  {
+    "workload_type": "chat_short",
+    "service_type": "llm",
+    "latency_sensitivity": "high",
+    "expected_duration": "short",
+    "thermal_sensitivity": "medium",
+    "preferred_model_tag": "fast-chat",
+    "notes": "Short interactive assistant turn."
+  },
+  {
+    "workload_type": "generation_long",
+    "service_type": "llm",
+    "latency_sensitivity": "medium",
+    "expected_duration": "long",
+    "thermal_sensitivity": "high",
+    "preferred_model_tag": "long-generation",
+    "notes": "Long-form generation."
+  },
+  {
+    "workload_type": "embedding",
+    "service_type": "embedding",
+    "latency_sensitivity": "medium",
+    "expected_duration": "short",
+    "thermal_sensitivity": "low",
+    "preferred_model_tag": "embedding",
+    "notes": "Vector generation."
+  },
+  {
+    "workload_type": "speech_to_text",
+    "service_type": "speech_to_text",
+    "latency_sensitivity": "medium",
+    "expected_duration": "medium",
+    "thermal_sensitivity": "medium",
+    "preferred_model_tag": "stt",
+    "notes": "Local transcription."
+  },
+  {
+    "workload_type": "text_to_speech",
+    "service_type": "text_to_speech",
+    "latency_sensitivity": "high",
+    "expected_duration": "short",
+    "thermal_sensitivity": "low",
+    "preferred_model_tag": "tts",
+    "notes": "Interactive voice synthesis."
+  }
+]

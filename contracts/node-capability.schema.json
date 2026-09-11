@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/node-capability.schema.json",
+  "title": "ORBI Edge Node Capability",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "node_id",
+    "device",
+    "runtime",
+    "resources",
+    "health",
+    "services"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "0.1" },
+    "node_id": { "type": "string", "minLength": 1 },
+    "device": {
+      "type": "object",
+      "required": ["manufacturer", "model", "android_version", "abi"],
+      "properties": {
+        "manufacturer": { "type": "string" },
+        "model": { "type": "string" },
+        "android_version": { "type": "string" },
+        "abi": { "type": "string" },
+        "soc": { "type": ["string", "null"] },
+        "gpu": { "type": ["string", "null"] },
+        "npu": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": "object",
+      "required": ["kind", "version"],
+      "properties": {
+        "kind": { "type": "string" },
+        "version": { "type": "string" },
+        "commit": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "physical_ram_mb",
+        "storage_total_mb",
+        "storage_free_mb"
+      ],
+      "properties": {
+        "physical_ram_mb": { "type": "integer", "minimum": 1 },
+        "memory_extension_enabled": { "type": ["boolean", "null"] },
+        "memory_extension_mb": { "type": ["integer", "null"], "minimum": 0 },
+        "storage_total_mb": { "type": "integer", "minimum": 1 },
+        "storage_free_mb": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "health": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["ready", "busy", "degraded", "paused", "offline"]
+        },
+        "battery_percent": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "charging": { "type": ["boolean", "null"] },
+        "temperature_c": { "type": ["number", "null"] },
+        "thermal_state": {
+          "type": ["string", "null"],
+          "enum": ["normal", "warm", "hot", "critical", "unknown", null]
+        }
+      },
+      "additionalProperties": true
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "status"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["llm", "embedding", "speech_to_text", "text_to_speech", "rerank", "other"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ready", "busy", "disabled", "unavailable"]
+          },
+          "model": { "type": ["string", "null"] },
+          "endpoint": { "type": ["string", "null"] }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

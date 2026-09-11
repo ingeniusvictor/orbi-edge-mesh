@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1",
+  "node_id": "node-03",
+  "device": {
+    "manufacturer": "Xiaomi",
+    "model": "Mi 10T Lite 5G",
+    "android_version": "TBD",
+    "abi": "arm64-v8a",
+    "soc": "Qualcomm Snapdragon 750G",
+    "gpu": "Adreno 619",
+    "npu": null
+  },
+  "runtime": {
+    "kind": "multi-runtime",
+    "version": "0.1",
+    "commit": null
+  },
+  "resources": {
+    "physical_ram_mb": 6144,
+    "memory_extension_enabled": null,
+    "memory_extension_mb": null,
+    "storage_total_mb": 262144,
+    "storage_free_mb": 170000
+  },
+  "health": {
+    "status": "ready",
+    "battery_percent": 91,
+    "charging": false,
+    "temperature_c": 31.0,
+    "thermal_state": "normal"
+  },
+  "services": [
+    {
+      "type": "speech_to_text",
+      "status": "ready",
+      "model": "whisper-small",
+      "family": "whisper",
+      "runtime": "whisper.cpp",
+      "model_status": "loaded",
+      "quantization": null,
+      "size_bytes": 500000000,
+      "context_max": null,
+      "endpoint": "http://node-03:8090"
+    },
+    {
+      "type": "text_to_speech",
+      "status": "ready",
+      "model": "kokoro-es",
+      "family": "kokoro",
+      "runtime": "kokoro",
+      "model_status": "ready",
+      "quantization": null,
+      "size_bytes": 400000000,
+      "context_max": null,
+      "endpoint": "http://node-03:8091"
+    },
+    {
+      "type": "embedding",
+      "status": "ready",
+      "model": "orbi-embed-small",
+      "family": "embedding",
+      "runtime": "local",
+      "model_status": "cold",
+      "quantization": null,
+      "size_bytes": 250000000,
+      "context_max": 8192,
+      "endpoint": null
+    }
+  ]
+}
