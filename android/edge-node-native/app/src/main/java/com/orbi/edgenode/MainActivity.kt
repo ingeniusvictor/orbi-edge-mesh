@@ -85,21 +85,19 @@ private fun NodeStatusScreen(
         PairingManager(context.applicationContext)
     }
 
+    var currentTelemetry by remember { mutableStateOf(telemetry) }
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
     var resourceDecision by remember {
-        mutableStateOf(
-            NodeResourcePolicy.evaluate(
-                NodeTelemetryProvider(context.applicationContext).snapshot()
-            )
-        )
+        mutableStateOf(NodeResourcePolicy.evaluate(currentTelemetry))
     }
 
     LaunchedEffect(Unit) {
         while (true) {
+            currentTelemetry = NodeTelemetryProvider(
+                context.applicationContext
+            ).snapshot()
             supervisorSnapshot = SupervisorMonitor.current
-            resourceDecision = NodeResourcePolicy.evaluate(
-                NodeTelemetryProvider(context.applicationContext).snapshot()
-            )
+            resourceDecision = NodeResourcePolicy.evaluate(currentTelemetry)
             delay(1_000)
         }
     }
@@ -147,6 +145,17 @@ private fun NodeStatusScreen(
         }
     }
 
+    val readiness = NativeAlphaReadinessEvaluator.evaluate(
+        telemetry = currentTelemetry,
+        nativeStatus = nativeStatus,
+        llamaSystemInfo = llamaSystemInfo,
+        modelPath = modelPath,
+        apiRunning = EdgeNodeRuntime.isApiRunning(),
+        supervisor = supervisorSnapshot,
+        resourceDecision = resourceDecision,
+        paired = pairingManager.hasPairingSecret(),
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -168,25 +177,39 @@ private fun NodeStatusScreen(
         Text("llama.cpp info: $llamaSystemInfo")
 
         HorizontalDivider()
+        Text("Native Alpha readiness", style = MaterialTheme.typography.titleMedium)
+        Text("READINESS ≠ PHYSICAL PASS", style = MaterialTheme.typography.bodySmall)
+        Text("N0 JNI bridge: ${if (readiness.n0Bridge) "READY" else "WAIT"}")
+        Text("N1 telemetry: ${if (readiness.n1Telemetry) "READY" else "WAIT"}")
+        Text("N2 llama.cpp link: ${if (readiness.n2LlamaLink) "READY" else "WAIT"}")
+        Text("N3 verified model import: ${if (readiness.n3ModelImported) "READY" else "WAIT"}")
+        Text("N4 model loaded: ${if (readiness.n4ModelLoaded) "READY" else "WAIT"}")
+        Text("N5 local API: ${if (readiness.n5ApiRunning) "READY" else "WAIT"}")
+        Text("N6 headless service evidence: ${if (readiness.n6HeadlessServiceEvidence) "READY" else "WAIT"}")
+        Text("N7 bounded supervisor: ${if (readiness.n7SupervisorRunning) "READY" else "WAIT"}")
+        Text("N8 resource policy: ${readiness.n8ResourceAction}")
+        Text("N9 paired trust: ${if (readiness.n9Paired) "READY" else "WAIT"}")
+
+        HorizontalDivider()
         Text("Native telemetry preview", style = MaterialTheme.typography.titleMedium)
 
-        Text("RAM total: ${Formatters.bytes(telemetry.memory.totalBytes)}")
-        Text("RAM available: ${Formatters.bytes(telemetry.memory.availableBytes)}")
-        Text("Low-memory flag: ${Formatters.bool(telemetry.memory.lowMemory)}")
+        Text("RAM total: ${Formatters.bytes(currentTelemetry.memory.totalBytes)}")
+        Text("RAM available: ${Formatters.bytes(currentTelemetry.memory.availableBytes)}")
+        Text("Low-memory flag: ${Formatters.bool(currentTelemetry.memory.lowMemory)}")
 
-        Text("Storage total: ${Formatters.bytes(telemetry.storage.totalBytes)}")
-        Text("Storage available: ${Formatters.bytes(telemetry.storage.availableBytes)}")
+        Text("Storage total: ${Formatters.bytes(currentTelemetry.storage.totalBytes)}")
+        Text("Storage available: ${Formatters.bytes(currentTelemetry.storage.availableBytes)}")
 
-        Text("Battery: ${Formatters.percent(telemetry.battery.percent)}")
-        Text("Charging: ${Formatters.bool(telemetry.battery.charging)}")
-        Text("Charge source: ${telemetry.battery.source ?: "UNKNOWN"}")
+        Text("Battery: ${Formatters.percent(currentTelemetry.battery.percent)}")
+        Text("Charging: ${Formatters.bool(currentTelemetry.battery.charging)}")
+        Text("Charge source: ${currentTelemetry.battery.source ?: "UNKNOWN"}")
 
-        Text("Network connected: ${Formatters.bool(telemetry.network.connected)}")
-        Text("Transports: ${Formatters.list(telemetry.network.transports)}")
-        Text("Addresses: ${Formatters.list(telemetry.network.addresses)}")
+        Text("Network connected: ${Formatters.bool(currentTelemetry.network.connected)}")
+        Text("Transports: ${Formatters.list(currentTelemetry.network.transports)}")
+        Text("Addresses: ${Formatters.list(currentTelemetry.network.addresses)}")
 
-        Text("Android thermal status: ${telemetry.thermal.status ?: "UNKNOWN"}")
-        Text("Thermal raw status: ${telemetry.thermal.rawStatus?.toString() ?: "UNKNOWN"}")
+        Text("Android thermal status: ${currentTelemetry.thermal.status ?: "UNKNOWN"}")
+        Text("Thermal raw status: ${currentTelemetry.thermal.rawStatus?.toString() ?: "UNKNOWN"}")
 
         HorizontalDivider()
         Text("Resource guard", style = MaterialTheme.typography.titleMedium)
@@ -336,7 +359,7 @@ private fun NodeStatusScreen(
         Text("API state: $apiStatus")
         Text(
             "Endpoint candidate: " +
-                (telemetry.network.addresses.firstOrNull { !it.contains(":") }
+                (currentTelemetry.network.addresses.firstOrNull { !it.contains(":") }
                     ?.let { "http://$it:8080" }
                     ?: "IPv4 unavailable")
         )
@@ -415,7 +438,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "N9 requires explicit signed pairing for privileged chat inference. Physical pairing, replay and revocation tests remain required.",
+            "Native Alpha consolidates N0-N9 readiness in one APK. No gate is physically certified until its Node-01 acceptance evidence is recorded.",
             style = MaterialTheme.typography.bodySmall,
         )
     }

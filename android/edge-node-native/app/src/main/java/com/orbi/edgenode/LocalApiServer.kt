@@ -149,6 +149,50 @@ class LocalApiServer(
                 writeJson(output, 200, json)
             }
 
+            method == "GET" && path == "/diagnostics" -> {
+                val device = DeviceProfiler.snapshot()
+                val health = NodeTelemetryProvider(context).snapshot()
+                val policy = NodeResourcePolicy.evaluate(health)
+                val supervisor = SupervisorMonitor.current
+
+                val json = JSONObject()
+                    .put("schema_version", "0.1")
+                    .put("service", "orbi-edge-node")
+                    .put("build_version", BuildConfig.VERSION_NAME)
+                    .put("build_code", BuildConfig.VERSION_CODE)
+                    .put("device_model", device.model)
+                    .put("android", device.androidVersion)
+                    .put("abi", device.abi)
+                    .put("native_status", NativeBridge.status())
+                    .put("llama_system_info", NativeBridge.llamaSystemInfo())
+                    .put("model_loaded", NativeBridge.isModelLoaded())
+                    .put("reference_model_id", ReferenceModels.qwen3Node01.id)
+                    .put("reference_model_file", ReferenceModels.qwen3Node01.fileName)
+                    .put("ram_total_bytes", health.memory.totalBytes ?: JSONObject.NULL)
+                    .put("ram_available_bytes", health.memory.availableBytes ?: JSONObject.NULL)
+                    .put("storage_total_bytes", health.storage.totalBytes ?: JSONObject.NULL)
+                    .put("storage_available_bytes", health.storage.availableBytes ?: JSONObject.NULL)
+                    .put("battery_percent", health.battery.percent ?: JSONObject.NULL)
+                    .put("charging", health.battery.charging ?: JSONObject.NULL)
+                    .put("charge_source", health.battery.source ?: JSONObject.NULL)
+                    .put("network_connected", health.network.connected ?: JSONObject.NULL)
+                    .put("network_transports", JSONArray(health.network.transports))
+                    .put("network_addresses", JSONArray(health.network.addresses))
+                    .put("thermal_status", health.thermal.status ?: JSONObject.NULL)
+                    .put("thermal_raw_status", health.thermal.rawStatus ?: JSONObject.NULL)
+                    .put("resource_action", policy.action.name)
+                    .put("resource_reason", policy.reason)
+                    .put("supervisor_running", supervisor.running)
+                    .put("supervisor_restart_attempts", supervisor.restartAttempts)
+                    .put("supervisor_quarantined", supervisor.quarantined)
+                    .put("supervisor_last_action", supervisor.lastAction)
+                    .put("node_id", pairing.nodeId)
+                    .put("paired", pairing.hasPairingSecret())
+                    .put("research_mode", true)
+
+                writeJson(output, 200, json)
+            }
+
             method == "GET" && path == "/node" -> {
                 val device = DeviceProfiler.snapshot()
                 val health = NodeTelemetryProvider(context).snapshot()
