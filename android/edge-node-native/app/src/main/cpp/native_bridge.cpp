@@ -1,7 +1,10 @@
 #include <jni.h>
 
 #include <algorithm>
+#include <chrono>
+#include <iomanip>
 #include <mutex>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -13,6 +16,17 @@ std::mutex g_mutex;
 llama_model* g_model = nullptr;
 int g_context_size = 4096;
 int g_threads = 4;
+std::string g_last_metrics_json =
+    "{\"status\":\"not_run\"}";
+
+void set_metrics_error(const char* code) {
+    std::ostringstream json;
+    json << "{"
+         << "\"status\":\"error\","
+         << "\"code\":\"" << code << "\""
+         << "}";
+    g_last_metrics_json = json.str();
+}
 
 jstring utf8_to_jstring(JNIEnv* env, const std::string& value) {
     std::vector<jchar> utf16;
