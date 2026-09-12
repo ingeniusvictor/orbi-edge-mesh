@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1",
+  "manifests": [
+    {
+      "node_id": "NODE01_ID_HERE",
+      "storage_available_bytes": 200000000000,
+      "memory_total_bytes": 12000000000,
+      "resource_action": "ALLOW",
+      "available_model_ids": [
+        "qwen3-1.7b-q4_k_m-node01"
+      ]
+    },
+    {
+      "node_id": "NODE02_ID_HERE",
+      "storage_available_bytes": 100000000000,
+      "memory_total_bytes": 8000000000,
+      "resource_action": "ALLOW",
+      "available_model_ids": []
+    },
+    {
+      "node_id": "NODE03_ID_HERE",
+      "storage_available_bytes": 100000000000,
+      "memory_total_bytes": 6000000000,
+      "resource_action": "DEGRADE",
+      "available_model_ids": []
+    }
+  ]
+}
