@@ -13,8 +13,8 @@ android {
         applicationId = "com.orbi.edgenode"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.10.1-native-alpha-anrfix"
+        versionCode = 13
+        versionName = "0.10.2-native-alpha-perffix"
 
         ndk {
             abiFilters += listOf("arm64-v8a")
@@ -30,6 +30,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
