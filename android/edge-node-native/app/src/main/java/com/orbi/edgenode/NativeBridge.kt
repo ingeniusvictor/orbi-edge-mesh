@@ -17,6 +17,7 @@ object NativeBridge {
         prompt: String,
         maxTokens: Int,
     ): String
+    private external fun lastGenerationMetricsNative(): String
     private external fun unloadModelNative(): String
 
     fun status(): String {
@@ -59,6 +60,14 @@ object NativeBridge {
         }.getOrElse {
             "ERROR: GENERATION_EXCEPTION_${it.javaClass.simpleName}"
         }
+    }
+
+    fun lastGenerationMetrics(): String {
+        if (!loaded) return "{\"status\":\"jni_not_loaded\"}"
+        return runCatching { lastGenerationMetricsNative() }
+            .getOrElse {
+                "{\"status\":\"metrics_error\",\"exception\":\"${it.javaClass.simpleName}\"}"
+            }
     }
 
     fun unloadModel(): String {
