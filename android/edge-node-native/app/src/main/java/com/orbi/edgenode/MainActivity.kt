@@ -118,6 +118,9 @@ private fun NodeStatusScreen(
     var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
     var inferenceStatus by remember { mutableStateOf("NOT RUN") }
     var responseText by remember { mutableStateOf("") }
+    var generationMetrics by remember {
+        mutableStateOf(NativeBridge.lastGenerationMetrics())
+    }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -293,6 +296,7 @@ private fun NodeStatusScreen(
                         )
                     }
                     responseText = response
+                    generationMetrics = NativeBridge.lastGenerationMetrics()
                     inferenceStatus = if (response.startsWith("ERROR:")) {
                         "FAIL"
                     } else {
@@ -441,10 +445,12 @@ private fun NodeStatusScreen(
             HorizontalDivider()
             Text("Native Qwen response", style = MaterialTheme.typography.titleMedium)
             Text(responseText)
+            Text("Native performance metrics", style = MaterialTheme.typography.titleMedium)
+            Text(generationMetrics)
         }
 
         Text(
-            "N11 preview adds zero-config LAN advertisement. Native Alpha gates remain physically uncertified until Node-01 evidence is recorded.",
+            "N14 preview adds self-measured inference performance. Physical comparison with the Termux reference remains required.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
