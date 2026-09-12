@@ -43,6 +43,7 @@ class NodeState:
     battery_percent: int | None = None
     thermal_status: str | None = None
     reported_node_id: str | None = None
+    capabilities: list[str] | None = None
     error: str | None = None
 
 
@@ -73,6 +74,7 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
     try:
         node = get_json(config.base_url + "/node", timeout)
         models = get_json(config.base_url + "/v1/models", timeout)
+        manifest = get_json(config.base_url + "/capabilities", timeout)
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError, OSError) as exc:
         return NodeState(config=config, reachable=False, error=f"{type(exc).__name__}: {exc}")
 
@@ -98,6 +100,11 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
         battery_percent=node.get("battery_percent"),
         thermal_status=node.get("thermal_status"),
         reported_node_id=reported_node_id,
+        capabilities=[
+            str(value)
+            for value in manifest.get("capabilities", [])
+            if isinstance(value, str)
+        ],
     )
 
 
@@ -121,12 +128,17 @@ def candidate_rank(state: NodeState) -> tuple[int, int, str]:
     return (action_rank, battery_penalty, state.config.name)
 
 
-def eligible(state: NodeState) -> bool:
+def eligible(
+    state: NodeState,
+    required_capability: str = "text.generate",
+) -> bool:
+    capabilities = state.capabilities or []
     return (
         state.reachable
         and state.model_loaded
         and state.paired
         and state.resource_action in {"ALLOW", "DEGRADE"}
+        and required_capability in capabilities
     )
 
 
@@ -203,6 +215,11 @@ def main() -> int:
     )
     parser.add_argument("--max-tokens", type=int, default=96)
     parser.add_argument("--timeout", type=float, default=20.0)
+    parser.add_argument(
+        "--capability",
+        default="text.generate",
+        help="Required node capability for workload routing.",
+    )
     parser.add_argument("--status-only", action="store_true")
     args = parser.parse_args()
 
@@ -218,9 +235,19 @@ def main() -> int:
     if args.status_only:
         return 0
 
-    candidates = sorted((state for state in states if eligible(state)), key=candidate_rank)
+    candidates = sorted(
+        (
+            state
+            for state in states
+            if eligible(state, args.capability)
+        ),
+        key=candidate_rank,
+    )
     if not candidates:
-        print("NO ELIGIBLE NATIVE ORBI NODE", file=sys.stderr)
+        print(
+            f"NO ELIGIBLE NATIVE ORBI NODE FOR CAPABILITY {args.capability}",
+            file=sys.stderr,
+        )
         return 1
 
     failures = []
