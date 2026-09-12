@@ -20,6 +20,7 @@ class NativeMeshRoutingTests(unittest.TestCase):
         loaded=True,
         paired=True,
         reachable=True,
+        capabilities=None,
     ):
         cfg = mod.NodeConfig(
             name=name,
@@ -35,6 +36,7 @@ class NativeMeshRoutingTests(unittest.TestCase):
             model_loaded=loaded,
             paired=paired,
             battery_percent=battery,
+            capabilities=capabilities or ["text.generate"],
         )
 
     def test_allow_beats_degrade(self):
@@ -61,6 +63,24 @@ class NativeMeshRoutingTests(unittest.TestCase):
 
     def test_unloaded_is_not_eligible(self):
         self.assertFalse(mod.eligible(self.node("cold", loaded=False)))
+
+    def test_missing_required_capability_is_not_eligible(self):
+        state = self.node(
+            "no-text",
+            capabilities=["node.health"],
+        )
+        self.assertFalse(
+            mod.eligible(state, "text.generate")
+        )
+
+    def test_matching_required_capability_is_eligible(self):
+        state = self.node(
+            "text-node",
+            capabilities=["node.health", "text.generate"],
+        )
+        self.assertTrue(
+            mod.eligible(state, "text.generate")
+        )
 
 
 if __name__ == "__main__":
