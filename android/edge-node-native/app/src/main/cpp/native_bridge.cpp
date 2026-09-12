@@ -224,15 +224,18 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     std::lock_guard<std::mutex> lock(g_mutex);
 
     if (g_model == nullptr) {
+        set_metrics_error("MODEL_NOT_LOADED");
         return env->NewStringUTF("ERROR: MODEL_NOT_LOADED");
     }
 
     if (prompt_value == nullptr) {
+        set_metrics_error("PROMPT_NULL");
         return env->NewStringUTF("ERROR: PROMPT_NULL");
     }
 
     const char* prompt_chars = env->GetStringUTFChars(prompt_value, nullptr);
     if (prompt_chars == nullptr) {
+        set_metrics_error("PROMPT_UTF8");
         return env->NewStringUTF("ERROR: PROMPT_UTF8");
     }
 
@@ -241,6 +244,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
 
     const llama_vocab* vocab = llama_model_get_vocab(g_model);
     if (vocab == nullptr) {
+        set_metrics_error("VOCAB_UNAVAILABLE");
         return env->NewStringUTF("ERROR: VOCAB_UNAVAILABLE");
     }
 
@@ -255,11 +259,13 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     );
 
     if (token_count_result >= 0) {
+        set_metrics_error("TOKEN_COUNT_UNEXPECTED");
         return env->NewStringUTF("ERROR: TOKEN_COUNT_UNEXPECTED");
     }
 
     const int n_prompt = -token_count_result;
     if (n_prompt <= 0) {
+        set_metrics_error("EMPTY_TOKENIZATION");
         return env->NewStringUTF("ERROR: EMPTY_TOKENIZATION");
     }
 
@@ -275,6 +281,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     );
 
     if (tokenized < 0) {
+        set_metrics_error("TOKENIZATION_FAILED");
         return env->NewStringUTF("ERROR: TOKENIZATION_FAILED");
     }
 
@@ -285,6 +292,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     );
 
     if (max_tokens <= 0) {
+        set_metrics_error("CONTEXT_TOO_SMALL");
         return env->NewStringUTF("ERROR: CONTEXT_TOO_SMALL");
     }
 
@@ -299,6 +307,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
 
     llama_context* ctx = llama_init_from_model(g_model, ctx_params);
     if (ctx == nullptr) {
+        set_metrics_error("CONTEXT_CREATE_FAILED");
         return env->NewStringUTF("ERROR: CONTEXT_CREATE_FAILED");
     }
 
@@ -307,6 +316,7 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
 
     llama_sampler* sampler = llama_sampler_chain_init(sampler_params);
     if (sampler == nullptr) {
+        set_metrics_error("SAMPLER_CREATE_FAILED");
         llama_free(ctx);
         return env->NewStringUTF("ERROR: SAMPLER_CREATE_FAILED");
     }
@@ -319,12 +329,32 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
     );
 
     std::string output;
+    using Clock = std::chrono::steady_clock;
+    const auto total_start = Clock::now();
+    double prompt_decode_ms = 0.0;
+    double generation_phase_ms = 0.0;
+    int generated_tokens = 0;
+    bool first_decode = true;
 
     for (int generated = 0; generated < max_tokens; ++generated) {
+        const auto decode_start = Clock::now();
         if (llama_decode(ctx, batch) != 0) {
+            set_metrics_error("DECODE_FAILED");
             llama_sampler_free(sampler);
             llama_free(ctx);
             return env->NewStringUTF("ERROR: DECODE_FAILED");
+        }
+        const auto decode_end = Clock::now();
+        const double decode_ms =
+            std::chrono::duration<double, std::milli>(
+                decode_end - decode_start
+            ).count();
+
+        if (first_decode) {
+            prompt_decode_ms = decode_ms;
+            first_decode = false;
+        } else {
+            generation_phase_ms += decode_ms;
         }
 
         llama_token token = llama_sampler_sample(sampler, ctx, -1);
@@ -334,13 +364,57 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
         }
 
         output += token_piece(vocab, token);
+        generated_tokens += 1;
         batch = llama_batch_get_one(&token, 1);
     }
+
+    const auto total_end = Clock::now();
+    const double total_ms =
+        std::chrono::duration<double, std::milli>(
+            total_end - total_start
+        ).count();
+
+    const double prompt_tps =
+        prompt_decode_ms > 0.0
+            ? static_cast<double>(n_prompt) / (prompt_decode_ms / 1000.0)
+            : 0.0;
+
+    const double generation_tps =
+        generation_phase_ms > 0.0
+            ? static_cast<double>(generated_tokens) /
+                (generation_phase_ms / 1000.0)
+            : 0.0;
+
+    std::ostringstream metrics;
+    metrics << std::fixed << std::setprecision(3)
+            << "{"
+            << "\"status\":\"ok\","
+            << "\"prompt_tokens\":" << n_prompt << ","
+            << "\"generated_tokens\":" << generated_tokens << ","
+            << "\"prompt_decode_ms\":" << prompt_decode_ms << ","
+            << "\"generation_decode_ms\":" << generation_phase_ms << ","
+            << "\"total_generation_loop_ms\":" << total_ms << ","
+            << "\"prompt_tokens_per_second\":" << prompt_tps << ","
+            << "\"generation_tokens_per_second\":" << generation_tps << ","
+            << "\"context_size\":" << g_context_size << ","
+            << "\"threads\":" << g_threads
+            << "}";
+    g_last_metrics_json = metrics.str();
 
     llama_sampler_free(sampler);
     llama_free(ctx);
 
     return utf8_to_jstring(env, output);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_orbi_edgenode_NativeBridge_lastGenerationMetricsNative(
+    JNIEnv* env,
+    jobject /* thiz */
+) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    return env->NewStringUTF(g_last_metrics_json.c_str());
 }
 
 extern "C"
