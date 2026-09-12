@@ -1,6 +1,7 @@
 #include <jni.h>
 
 #include <algorithm>
+#include <atomic>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -11,6 +12,7 @@ namespace {
 
 std::mutex g_mutex;
 llama_model* g_model = nullptr;
+std::atomic<bool> g_model_loaded{false};
 int g_context_size = 4096;
 int g_threads = 4;
 
@@ -118,6 +120,7 @@ std::string token_piece(const llama_vocab* vocab, llama_token token) {
 }
 
 void unload_locked() {
+    g_model_loaded.store(false, std::memory_order_release);
     if (g_model != nullptr) {
         llama_model_free(g_model);
         g_model = nullptr;
@@ -180,8 +183,11 @@ Java_com_orbi_edgenode_NativeBridge_loadModelNative(
 
     g_model = llama_model_load_from_file(path.c_str(), params);
     if (g_model == nullptr) {
+        g_model_loaded.store(false, std::memory_order_release);
         return env->NewStringUTF("ERROR: MODEL_LOAD_FAILED");
     }
+
+    g_model_loaded.store(true, std::memory_order_release);
 
     g_context_size = std::max(512, static_cast<int>(context_size));
     g_threads = std::max(1, static_cast<int>(threads));
@@ -195,8 +201,9 @@ Java_com_orbi_edgenode_NativeBridge_isModelLoadedNative(
     JNIEnv* /* env */,
     jobject /* thiz */
 ) {
-    std::lock_guard<std::mutex> lock(g_mutex);
-    return g_model != nullptr ? JNI_TRUE : JNI_FALSE;
+    return g_model_loaded.load(std::memory_order_acquire)
+        ? JNI_TRUE
+        : JNI_FALSE;
 }
 
 extern "C"
