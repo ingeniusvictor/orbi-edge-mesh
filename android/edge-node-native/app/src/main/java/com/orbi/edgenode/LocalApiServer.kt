@@ -154,6 +154,7 @@ class LocalApiServer(
                 val health = NodeTelemetryProvider(context).snapshot()
                 val policy = NodeResourcePolicy.evaluate(health)
                 val supervisor = SupervisorMonitor.current
+                val discovery = DiscoveryMonitor.current
 
                 val json = JSONObject()
                     .put("schema_version", "0.1")
@@ -188,6 +189,11 @@ class LocalApiServer(
                     .put("supervisor_last_action", supervisor.lastAction)
                     .put("node_id", pairing.nodeId)
                     .put("paired", pairing.hasPairingSecret())
+                    .put("discovery_advertising", discovery.advertising)
+                    .put("discovery_service_name", discovery.serviceName ?: JSONObject.NULL)
+                    .put("discovery_service_type", discovery.serviceType)
+                    .put("discovery_port", discovery.port ?: JSONObject.NULL)
+                    .put("discovery_status", discovery.lastStatus)
                     .put("research_mode", true)
 
                 writeJson(output, 200, json)
@@ -198,6 +204,7 @@ class LocalApiServer(
                 val health = NodeTelemetryProvider(context).snapshot()
                 val policy = NodeResourcePolicy.evaluate(health)
                 val supervisor = SupervisorMonitor.current
+                val discovery = DiscoveryMonitor.current
                 val json = JSONObject()
                     .put("service", "orbi-edge-node")
                     .put("device_model", device.model)
@@ -214,6 +221,10 @@ class LocalApiServer(
                     .put("supervisor_last_action", supervisor.lastAction)
                     .put("node_id", pairing.nodeId)
                     .put("paired", pairing.hasPairingSecret())
+                    .put("discovery_advertising", discovery.advertising)
+                    .put("discovery_service_name", discovery.serviceName ?: JSONObject.NULL)
+                    .put("discovery_service_type", discovery.serviceType)
+                    .put("discovery_port", discovery.port ?: JSONObject.NULL)
                 writeJson(output, 200, json)
             }
 

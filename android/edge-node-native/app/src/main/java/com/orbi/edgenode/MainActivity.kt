@@ -87,6 +87,7 @@ private fun NodeStatusScreen(
 
     var currentTelemetry by remember { mutableStateOf(telemetry) }
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
+    var discoverySnapshot by remember { mutableStateOf(DiscoveryMonitor.current) }
     var resourceDecision by remember {
         mutableStateOf(NodeResourcePolicy.evaluate(currentTelemetry))
     }
@@ -97,6 +98,7 @@ private fun NodeStatusScreen(
                 context.applicationContext
             ).snapshot()
             supervisorSnapshot = SupervisorMonitor.current
+            discoverySnapshot = DiscoveryMonitor.current
             resourceDecision = NodeResourcePolicy.evaluate(currentTelemetry)
             delay(1_000)
         }
@@ -368,6 +370,10 @@ private fun NodeStatusScreen(
             style = MaterialTheme.typography.bodySmall,
         )
 
+        Text("Zero-config discovery: ${discoverySnapshot.lastStatus}")
+        Text("mDNS service: ${discoverySnapshot.serviceName ?: "NOT REGISTERED"}")
+        Text("mDNS type: ${discoverySnapshot.serviceType}")
+
         Button(
             onClick = { apiStatus = EdgeNodeRuntime.startApi() },
         ) {
@@ -438,7 +444,7 @@ private fun NodeStatusScreen(
         }
 
         Text(
-            "Native Alpha consolidates N0-N9 readiness in one APK. No gate is physically certified until its Node-01 acceptance evidence is recorded.",
+            "N11 preview adds zero-config LAN advertisement. Native Alpha gates remain physically uncertified until Node-01 evidence is recorded.",
             style = MaterialTheme.typography.bodySmall,
         )
     }
