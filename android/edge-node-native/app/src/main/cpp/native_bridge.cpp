@@ -379,9 +379,12 @@ Java_com_orbi_edgenode_NativeBridge_generateNative(
             ? static_cast<double>(n_prompt) / (prompt_decode_ms / 1000.0)
             : 0.0;
 
+    const int timed_generation_tokens =
+        std::max(0, generated_tokens - 1);
+
     const double generation_tps =
-        generation_phase_ms > 0.0
-            ? static_cast<double>(generated_tokens) /
+        generation_phase_ms > 0.0 && timed_generation_tokens > 0
+            ? static_cast<double>(timed_generation_tokens) /
                 (generation_phase_ms / 1000.0)
             : 0.0;
 
