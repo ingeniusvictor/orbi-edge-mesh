@@ -21,6 +21,7 @@ object NativeAlphaReadinessEvaluator {
         nativeStatus: String,
         llamaSystemInfo: String,
         modelPath: String?,
+        modelLoaded: Boolean,
         apiRunning: Boolean,
         supervisor: SupervisorSnapshot,
         resourceDecision: ResourceDecision,
@@ -44,7 +45,7 @@ object NativeAlphaReadinessEvaluator {
                 !llamaSystemInfo.startsWith("LLAMA NOT AVAILABLE") &&
                 !llamaSystemInfo.startsWith("LLAMA LINK ERROR"),
             n3ModelImported = modelImported,
-            n4ModelLoaded = NativeBridge.isModelLoaded(),
+            n4ModelLoaded = modelLoaded,
             n5ApiRunning = apiRunning,
             n6HeadlessServiceEvidence = supervisor.running,
             n7SupervisorRunning = supervisor.running,

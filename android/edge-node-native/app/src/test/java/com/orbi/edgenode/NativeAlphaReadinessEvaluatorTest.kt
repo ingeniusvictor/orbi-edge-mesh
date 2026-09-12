@@ -38,6 +38,7 @@ class NativeAlphaReadinessEvaluatorTest {
             nativeStatus = "JNI BRIDGE READY",
             llamaSystemInfo = "llama linked",
             modelPath = null,
+            modelLoaded = false,
             apiRunning = false,
             supervisor = SupervisorSnapshot(false, 0, false, "NOT STARTED"),
             resourceDecision = ResourceDecision(
