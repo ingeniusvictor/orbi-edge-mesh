@@ -199,6 +199,31 @@ class LocalApiServer(
                 writeJson(output, 200, json)
             }
 
+            method == "GET" && path == "/capabilities" -> {
+                val manifest = NodeCapabilityProvider(context).snapshot()
+                val json = JSONObject()
+                    .put("schema_version", manifest.schemaVersion)
+                    .put("protocol_version", manifest.protocolVersion)
+                    .put("node_id", manifest.nodeId)
+                    .put("build_version", manifest.buildVersion)
+                    .put("device_model", manifest.deviceModel)
+                    .put("abi", manifest.abi)
+                    .put("memory_total_bytes", manifest.memoryTotalBytes ?: JSONObject.NULL)
+                    .put("memory_available_bytes", manifest.memoryAvailableBytes ?: JSONObject.NULL)
+                    .put("storage_total_bytes", manifest.storageTotalBytes ?: JSONObject.NULL)
+                    .put("storage_available_bytes", manifest.storageAvailableBytes ?: JSONObject.NULL)
+                    .put("capabilities", JSONArray(manifest.capabilities))
+                    .put("available_model_ids", JSONArray(manifest.availableModelIds))
+                    .put("loaded_model_ids", JSONArray(manifest.loadedModelIds))
+                    .put("resource_action", manifest.resourceAction)
+                    .put("headless_supported", manifest.headlessSupported)
+                    .put("signed_control_required", manifest.signedControlRequired)
+                    .put("discovery_service_type", manifest.discoveryServiceType)
+                    .put("unified_ram", false)
+
+                writeJson(output, 200, json)
+            }
+
             method == "GET" && path == "/node" -> {
                 val device = DeviceProfiler.snapshot()
                 val health = NodeTelemetryProvider(context).snapshot()
