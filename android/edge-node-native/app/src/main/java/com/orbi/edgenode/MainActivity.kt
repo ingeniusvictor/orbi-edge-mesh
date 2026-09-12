@@ -86,6 +86,7 @@ private fun NodeStatusScreen(
     }
 
     var currentTelemetry by remember { mutableStateOf(telemetry) }
+    var modelLoaded by remember { mutableStateOf(NativeBridge.isModelLoaded()) }
     var supervisorSnapshot by remember { mutableStateOf(SupervisorMonitor.current) }
     var resourceDecision by remember {
         mutableStateOf(NodeResourcePolicy.evaluate(currentTelemetry))
@@ -96,6 +97,7 @@ private fun NodeStatusScreen(
             currentTelemetry = NodeTelemetryProvider(
                 context.applicationContext
             ).snapshot()
+            modelLoaded = NativeBridge.isModelLoaded()
             supervisorSnapshot = SupervisorMonitor.current
             resourceDecision = NodeResourcePolicy.evaluate(currentTelemetry)
             delay(1_000)
@@ -111,9 +113,15 @@ private fun NodeStatusScreen(
 
     var serviceStatus by remember { mutableStateOf("STOPPED") }
     var apiStatus by remember { mutableStateOf("STOPPED") }
-    var modelStatus by remember { mutableStateOf("NOT IMPORTED") }
     var modelPath by remember { mutableStateOf(configStore.modelPath()) }
-    var runtimeStatus by remember { mutableStateOf("MODEL NOT LOADED") }
+    var modelStatus by remember {
+        mutableStateOf(
+            if (modelPath != null) "PERSISTED VERIFIED IMPORT" else "NOT IMPORTED"
+        )
+    }
+    var runtimeStatus by remember {
+        mutableStateOf(if (modelLoaded) "MODEL LOADED" else "MODEL NOT LOADED")
+    }
     var inferenceStatus by remember { mutableStateOf("NOT RUN") }
     var responseText by remember { mutableStateOf("") }
 
@@ -150,6 +158,7 @@ private fun NodeStatusScreen(
         nativeStatus = nativeStatus,
         llamaSystemInfo = llamaSystemInfo,
         modelPath = modelPath,
+        modelLoaded = modelLoaded,
         apiRunning = EdgeNodeRuntime.isApiRunning(),
         supervisor = supervisorSnapshot,
         resourceDecision = resourceDecision,
@@ -256,7 +265,8 @@ private fun NodeStatusScreen(
                         )
                     }
                     runtimeStatus = result
-                    if (result == "MODEL LOADED") {
+                    modelLoaded = result == "MODEL LOADED"
+                    if (modelLoaded) {
                         configStore.setValidatedModelPath(path)
                         configStore.setRuntimeConfig(4096, 4)
                         configStore.setDesiredModelLoaded(true)
@@ -268,7 +278,7 @@ private fun NodeStatusScreen(
         }
 
         Button(
-            enabled = modelPath != null,
+            enabled = modelPath != null && modelLoaded,
             onClick = {
                 val decision = NodeResourcePolicy.evaluate(
                     NodeTelemetryProvider(context.applicationContext).snapshot()
@@ -291,6 +301,7 @@ private fun NodeStatusScreen(
                         )
                     }
                     responseText = response
+                    modelLoaded = NativeBridge.isModelLoaded()
                     inferenceStatus = if (response.startsWith("ERROR:")) {
                         "FAIL"
                     } else {
@@ -309,6 +320,7 @@ private fun NodeStatusScreen(
                     runtimeStatus = withContext(Dispatchers.IO) {
                         NativeBridge.unloadModel()
                     }
+                    modelLoaded = false
                 }
             },
         ) {
