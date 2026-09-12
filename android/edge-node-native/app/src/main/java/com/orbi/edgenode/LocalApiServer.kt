@@ -194,6 +194,7 @@ class LocalApiServer(
                     .put("discovery_service_type", discovery.serviceType)
                     .put("discovery_port", discovery.port ?: JSONObject.NULL)
                     .put("discovery_status", discovery.lastStatus)
+                    .put("last_generation_metrics", lastGenerationMetricsJson())
                     .put("research_mode", true)
 
                 writeJson(output, 200, json)
@@ -365,6 +366,7 @@ class LocalApiServer(
             .put("id", "orbi-local")
             .put("object", "chat.completion")
             .put("model", ReferenceModels.qwen3Node01.id)
+            .put("orbi_metrics", lastGenerationMetricsJson())
             .put(
                 "choices",
                 JSONArray().put(
@@ -441,6 +443,12 @@ class LocalApiServer(
         output.write(header)
         output.write(bytes)
         output.flush()
+    }
+
+    private fun lastGenerationMetricsJson(): Any {
+        val raw = NativeBridge.lastGenerationMetrics()
+        return runCatching { JSONObject(raw) }
+            .getOrElse { raw }
     }
 
     private fun errorJson(
