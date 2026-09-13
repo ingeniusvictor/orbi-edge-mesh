@@ -1,6 +1,8 @@
 package com.orbi.edgenode
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -105,6 +107,7 @@ private fun NodeStatusScreen(
     }
 
     var pairingToken by remember { mutableStateOf<String?>(null) }
+    var pairingCopyStatus by remember { mutableStateOf<String?>(null) }
     var pairingStatus by remember {
         mutableStateOf(
             if (pairingManager.hasPairingSecret()) "PAIRED" else "NOT PAIRED"
@@ -336,13 +339,30 @@ private fun NodeStatusScreen(
             style = MaterialTheme.typography.bodySmall,
         )
 
-        if (!pairingToken.isNullOrBlank()) {
-            Text("Pairing token (copy now): $pairingToken")
+        pairingToken?.takeIf { it.isNotBlank() }?.let { token ->
+            Text("Pairing token (copy now): $token")
+            Button(
+                onClick = {
+                    val clipboard = context.getSystemService(ClipboardManager::class.java)
+                    clipboard?.setPrimaryClip(
+                        ClipData.newPlainText("ORBI pairing token", token)
+                    )
+                    pairingToken = null
+                    pairingCopyStatus = "COPIED • TOKEN HIDDEN"
+                },
+            ) {
+                Text("Copy pairing token")
+            }
+        }
+
+        if (!pairingCopyStatus.isNullOrBlank()) {
+            Text("Pairing token status: $pairingCopyStatus")
         }
 
         Button(
             onClick = {
                 pairingToken = pairingManager.rotatePairingToken()
+                pairingCopyStatus = "TOKEN READY TO COPY"
                 pairingStatus = "PAIRED"
             },
         ) {
@@ -360,6 +380,7 @@ private fun NodeStatusScreen(
             onClick = {
                 pairingManager.revokePairing()
                 pairingToken = null
+                pairingCopyStatus = null
                 pairingStatus = "REVOKED / NOT PAIRED"
             },
         ) {
