@@ -1,6 +1,8 @@
 package com.orbi.edgenode
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -105,6 +107,7 @@ private fun NodeStatusScreen(
     }
 
     var pairingToken by remember { mutableStateOf<String?>(null) }
+    var pairingCopyStatus by remember { mutableStateOf<String?>(null) }
     var pairingStatus by remember {
         mutableStateOf(
             if (pairingManager.hasPairingSecret()) "PAIRED" else "NOT PAIRED"
