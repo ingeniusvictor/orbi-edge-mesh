@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "profile": "orbi-ecc-edge-mesh-v0.2",
-  "status": "agentshield-baseline-classified",
+  "profile": "orbi-ecc-edge-mesh-v0.3",
+  "status": "agent-sort-classified",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
@@ -139,8 +139,66 @@
     ]
   },
   "projectSkills": [],
-  "dailyAgents": [],
-  "libraryAgents": [],
-  "dailySkills": [],
-  "librarySkills": []
+  "dailyAgents": [
+    "planner",
+    "architect",
+    "code-reviewer",
+    "security-reviewer",
+    "tdd-guide",
+    "doc-updater",
+    "kotlin-reviewer",
+    "python-reviewer"
+  ],
+  "libraryAgents": [
+    "cpp-reviewer",
+    "build-error-resolver",
+    "performance-optimizer",
+    "refactor-cleaner",
+    "e2e-runner",
+    "harness-optimizer",
+    "loop-operator",
+    "mle-reviewer",
+    "rag-pipeline-reviewer"
+  ],
+  "dailySkills": [
+    "architecture-decision-records",
+    "coding-standards",
+    "contract-first",
+    "tdd-workflow",
+    "verification-loop",
+    "security-review",
+    "context-budget",
+    "delivery-gate",
+    "git-workflow"
+  ],
+  "librarySkills": [
+    "agent-sort",
+    "codebase-onboarding",
+    "agent-harness-construction",
+    "ai-regression-testing",
+    "eval-harness",
+    "benchmark",
+    "benchmark-methodology",
+    "error-handling",
+    "kotlin-patterns",
+    "kotlin-testing",
+    "python-patterns",
+    "python-testing",
+    "cpp-coding-standards",
+    "cpp-testing"
+  ],
+  "agentSort": {
+    "phase": "EDGE-ECC-P3",
+    "evidenceBacked": true,
+    "runtimeExecuted": false,
+    "p2CanonicalAtStart": "766a48a10756969c59f19b85638b54da962d0e51",
+    "mandatoryTriggeredReviewers": [
+      {
+        "reviewer": "cpp-reviewer",
+        "when": "C++ / JNI / native boundary changes"
+      }
+    ],
+    "nextRecommendedSkill": "orbi-edge-physical-evidence-review",
+    "secondRecommendedSkill": "orbi-edge-node-trust-review"
+  }
 }
