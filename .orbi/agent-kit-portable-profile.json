@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "profile": "orbi-agent-kit-edge-mesh-portable-v0.1",
+  "status": "selective-reuse-ready",
+  "sourcePilot": {
+    "repository": "ingeniusvictor/orbi-edge-mesh",
+    "canonicalBranch": "feature/native-alpha-pairing-ux",
+    "certifiedThroughPhase": "EDGE-ECC-P7",
+    "certifiedBaseline": "6b26d81664c4d546e22383b40befeaa0a78992dd",
+    "sourceKit": {
+      "repository": "ingeniusvictor/orbi-agent-kit",
+      "version": "0.2.0",
+      "canonicalCommit": "8ef98f7a5edd7c27bda011ba77ddd3e26c3ee31f",
+      "certifiedCoreThrough": "K2-06"
+    }
+  },
+  "portableComponents": [
+    {
+      "name": "repository-adapter-pattern",
+      "reuse": "portable-with-domain-review",
+      "reason": "Exact software gates, local/physical evidence, authority domains and conditional skill routing are reusable structure."
+    },
+    {
+      "name": "ci-vs-physical-evidence-boundary",
+      "reuse": "portable-for-hardware-and-edge-systems",
+      "reason": "CI preparation must remain distinct from physical device/runtime certification."
+    },
+    {
+      "name": "identity-trust-capability-separation",
+      "reuse": "portable-for-node-and-device-systems",
+      "reason": "Identity, discovery, trust, capability advertisement and physical verification are distinct evidence levels."
+    },
+    {
+      "name": "structured-agent-observation",
+      "reuse": "portable-with-authority-field-review",
+      "reason": "Observation/recovery structure generalizes while authority-impact fields remain target-specific."
+    },
+    {
+      "name": "conditional-domain-skill-loading",
+      "reuse": "portable",
+      "reason": "Physical, trust and context procedures remain discoverable rather than permanently loaded."
+    },
+    {
+      "name": "protected-context-budget",
+      "reuse": "portable-with-domain-invariants",
+      "reason": "Persistent context can be bounded while safety and authority invariants are protected from optimization."
+    },
+    {
+      "name": "fresh-report-only-security-baseline",
+      "reuse": "portable",
+      "reason": "Each target repository receives an independent AgentShield baseline rather than inherited exceptions."
+    }
+  ],
+  "edgeSpecific": [
+    "Android/Kotlin/C++ JNI Native Alpha runtime",
+    "physical N-stage certification",
+    "pairing/HMAC/replay lifecycle",
+    "trusted-LAN exposure policy",
+    "thermal and power resource policy",
+    "model import/hash/load/inference evidence",
+    "Android NSD/mDNS discovery",
+    "node admission and whole-workload routing",
+    "model placement/transfer policy",
+    "unified-RAM and distributed-execution claim boundaries"
+  ],
+  "projectSkills": [
+    {
+      "name": "orbi-edge-physical-evidence-review",
+      "reuse": "domain-specific-pattern"
+    },
+    {
+      "name": "orbi-edge-node-trust-review",
+      "reuse": "adaptable-for-node-systems"
+    },
+    {
+      "name": "orbi-edge-agent-harness",
+      "reuse": "adaptable-pattern"
+    },
+    {
+      "name": "orbi-edge-context-budget",
+      "reuse": "portable-with-review"
+    }
+  ],
+  "validationEvidence": {
+    "finalPreCertificationCanonical": "6b26d81664c4d546e22383b40befeaa0a78992dd",
+    "finalPreCertificationHead": "b3952e683925daa89d1cc310f7a32476ffdcd57b",
+    "phase0Run": 35757257010,
+    "integratedGateRun": 35757257518,
+    "pythonTests": {
+      "passed": 90,
+      "failed": 0
+    },
+    "androidUnitTests": "pass",
+    "optimizedReleaseApk": "pass",
+    "nativeArm64Verification": "pass",
+    "releaseApkSha256": "b98be875bb54a05e75fd45f198d00882d54d969a46f361445696bb0e7194c154",
+    "agentShieldRun": 35757257087,
+    "agentShieldScore": 100,
+    "agentShieldGrade": "A",
+    "agentShieldFindings": 0,
+    "uniqueFindingClasses": 0,
+    "supplyChain": "clean",
+    "evidencePackVerified": true,
+    "evidencePackDigest": "sha256:f25b6e43451c7651500785b39f1a8e3dce6b3d5056c9aa3d1b0b3379106acde4"
+  },
+  "authority": {
+    "mayCertifyPhysicalStage": false,
+    "mayExposeApiBeyondTrustedLan": false,
+    "mayDiscloseOrRotatePairingSecrets": false,
+    "mayBypassResourcePolicy": false,
+    "mayAdmitOrReroutePhysicalNodes": false,
+    "mayTransferOrDeleteModels": false,
+    "mayClaimUnifiedRam": false,
+    "mayClaimDistributedModelExecution": false,
+    "mayTreatCiAsPhysicalReadiness": false
+  },
+  "deferred": {
+    "hooks": false,
+    "mcp": false,
+    "continuousLearning": false,
+    "unifiedMemory": false,
+    "agentKitAutonomousLoops": false,
+    "multiAgentRuntimeRoles": false
+  }
+}
