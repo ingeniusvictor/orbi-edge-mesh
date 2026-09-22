@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - feature/native-alpha-pairing-ux
+  push:
+    branches:
+      - "feature/ecc-orbi-edge-*"
   workflow_dispatch:
 
 permissions:
