@@ -76,8 +76,9 @@ It uses immutable SHAs for:
 - checkout;
 - setup-python;
 - setup-java;
-- setup-android;
 - Gradle setup.
+
+The gate intentionally uses the Android SDK already present on the GitHub-hosted Ubuntu runner and calls `sdkmanager` directly. The previous `android-actions/setup-android@v3` path is not used because its current setup path attempts to install the obsolete SDK package `tools` on the 2026 runner image.
 
 It runs:
 
