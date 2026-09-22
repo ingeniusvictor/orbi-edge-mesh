@@ -1,10 +1,14 @@
 package com.orbi.edgenode
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -14,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
@@ -105,6 +110,7 @@ private fun NodeStatusScreen(
     }
 
     var pairingToken by remember { mutableStateOf<String?>(null) }
+    var pairingCopyStatus by remember { mutableStateOf("NOT COPIED") }
     var pairingStatus by remember {
         mutableStateOf(
             if (pairingManager.hasPairingSecret()) "PAIRED" else "NOT PAIRED"
@@ -337,12 +343,37 @@ private fun NodeStatusScreen(
         )
 
         if (!pairingToken.isNullOrBlank()) {
-            Text("Pairing token (copy now): $pairingToken")
+            SelectionContainer {
+                Text("Pairing token: $pairingToken")
+            }
+            Button(
+                onClick = {
+                    val token = pairingToken ?: return@Button
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE)
+                        as ClipboardManager
+                    clipboard.setPrimaryClip(
+                        ClipData.newPlainText("ORBI pairing token", token)
+                    )
+                    pairingCopyStatus = "COPIED TO CLIPBOARD"
+                    Toast.makeText(
+                        context,
+                        "Pairing token copied",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                },
+            ) {
+                Text("Copy pairing token")
+            }
+            Text(
+                "Copy state: $pairingCopyStatus",
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
 
         Button(
             onClick = {
                 pairingToken = pairingManager.rotatePairingToken()
+                pairingCopyStatus = "NOT COPIED"
                 pairingStatus = "PAIRED"
             },
         ) {
@@ -360,6 +391,7 @@ private fun NodeStatusScreen(
             onClick = {
                 pairingManager.revokePairing()
                 pairingToken = null
+                pairingCopyStatus = "NOT COPIED"
                 pairingStatus = "REVOKED / NOT PAIRED"
             },
         ) {
