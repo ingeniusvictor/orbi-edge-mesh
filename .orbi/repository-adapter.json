@@ -121,6 +121,17 @@
         "real-node discovery/routing evidence"
       ],
       "defaultLoad": false
+    },
+    {
+      "skill": "orbi-edge-node-trust-review",
+      "when": [
+        "node trust/admission review",
+        "pairing or signed-control trust evidence",
+        "capability/service/model advertisement",
+        "LAN discovery and eligibility",
+        "routing candidate evidence"
+      ],
+      "defaultLoad": false
     }
   ],
   "deferredCapabilities": [
