@@ -1,6 +1,6 @@
 # EDGE-ECC-P2 — AgentShield Repository Baseline
 
-Status: REPORT-ONLY / BASELINE PENDING FIRST EXECUTION
+Status: REPORT-ONLY / BASELINE CLASSIFIED
 
 ## Purpose
 
@@ -75,3 +75,27 @@ P2 passes only when:
 5. any accepted false positive is justified from Edge evidence;
 6. Edge ECC PR Gate remains GREEN;
 7. no runtime/product behavior changes.
+
+## First-run evidence
+
+Run: `35736298537`
+
+Result:
+
+- score: **100 / 100**;
+- grade: **A**;
+- findings: **0**;
+- unique finding classes: **0**;
+- supply chain: **CLEAN**;
+- evidence-pack verification: **PASSED**;
+- evidence-pack digest: `sha256:0ef2730141a44cbf8f172ee1799dc9be84ab6c0ae84e42b81caa005fdea8c728`;
+- artifact ID: `10698241187`;
+- artifact digest: `sha256:c1e4a630b4f40c15192056348834c045669b942a0674bc622ceb87aeb41f45bf`.
+
+Classification:
+
+`BASELINE_CLEAN — NO_ACCEPTED_FINDING_CLASSES`
+
+Any future AgentShield finding on Edge Mesh is therefore a **new finding class until explicitly reviewed**.
+
+No repository-specific exception is required by P2.
