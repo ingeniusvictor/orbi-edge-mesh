@@ -1,0 +1,4 @@
+# ORBI Edge Node N2 pinned llama.cpp revision
+repository=ggml-org/llama.cpp
+commit=df03399b885831b2a1603b3abb0d8c156808e363
+phase0_reference=0.4.0-dev-b10902-df03399b8
