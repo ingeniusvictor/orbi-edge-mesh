@@ -109,7 +109,20 @@
     "baseline": "BASELINE_CLEAN — NO_ACCEPTED_FINDING_CLASSES",
     "baselineRun": 35736298537
   },
-  "skillRouting": [],
+  "skillRouting": [
+    {
+      "skill": "orbi-edge-physical-evidence-review",
+      "when": [
+        "physical N-stage claim",
+        "APK/device/model physical validation",
+        "pairing/signed/replay physical validation",
+        "headless parity",
+        "thermal/power observation",
+        "real-node discovery/routing evidence"
+      ],
+      "defaultLoad": false
+    }
+  ],
   "deferredCapabilities": [
     "hooks",
     "mcp",
