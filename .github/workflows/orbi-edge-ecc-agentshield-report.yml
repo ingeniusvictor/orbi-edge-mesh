@@ -1,0 +1,87 @@
+name: ORBI Edge ECC AgentShield report-only
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - feature/native-alpha-pairing-ux
+    paths:
+      - ".github/**"
+      - ".orbi/**"
+      - ".agents/**"
+      - "docs/ecc/**"
+      - "AGENTS.md"
+      - "android/edge-node-native/**"
+      - "manager/**"
+      - "security/**"
+      - "contracts/**"
+      - "scripts/pc/**"
+      - "tests/**"
+  push:
+    branches:
+      - "feature/ecc-orbi-edge-*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: orbi-edge-agentshield-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  report-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: AgentShield scan
+        id: agentshield
+        continue-on-error: true
+        uses: affaan-m/agentshield@b0891303bdcd6037376a94263d45cfd2ff3dfb98 # ecc-agentshield v1.6.0
+        with:
+          path: "."
+          min-severity: "low"
+          fail-on-findings: false
+          format: "sarif"
+          sarif-output: "agentshield-results.sarif"
+          save-baseline: ".agentshield/current-baseline.json"
+          supply-chain: true
+          supply-chain-online: false
+          fail-on-supply-chain: false
+          evidence-pack: ".agentshield/evidence"
+          verify-evidence-pack: true
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## ORBI Edge Mesh AgentShield — report only"
+            echo
+            echo "- Scanner outcome: ${{ steps.agentshield.outcome }}"
+            echo "- Security score: ${{ steps.agentshield.outputs.score }}"
+            echo "- Grade: ${{ steps.agentshield.outputs.grade }}"
+            echo "- Total findings: ${{ steps.agentshield.outputs.total-findings }}"
+            echo "- Critical findings: ${{ steps.agentshield.outputs.critical-count }}"
+            echo "- Supply-chain status: ${{ steps.agentshield.outputs.supply-chain-status }}"
+            echo
+            echo "**Report-only. No automatic fixes. Fresh Edge Mesh baseline.**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload evidence
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: orbi-edge-agentshield-${{ github.run_id }}
+          path: |
+            agentshield-results.sarif
+            .agentshield/evidence
+            .agentshield/current-baseline.json
+          if-no-files-found: warn
+          retention-days: 14
