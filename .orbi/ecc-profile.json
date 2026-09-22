@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "profile": "orbi-ecc-edge-mesh-v0.1",
+  "status": "inventory-and-instruction-baseline",
+  "adoptionMode": "curated",
+  "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
+  "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
+  "repositoryBaseline": "22f857c556ef572a8b53f723f678b69ce2959fa9",
+  "sourceKit": {
+    "repository": "ingeniusvictor/orbi-agent-kit",
+    "version": "0.2-development",
+    "certifiedCoreThrough": "K2-05",
+    "canonicalCommit": "52af5d401566720f7ba4a429d1612dcc640c7962",
+    "adapterSchema": "orbi.repository.adapter.v1"
+  },
+  "stack": {
+    "languages": [
+      "Kotlin",
+      "C++17",
+      "Python"
+    ],
+    "android": {
+      "compileSdk": 35,
+      "minSdk": 26,
+      "targetSdk": 35,
+      "jdk": 17,
+      "kotlin": "2.0.21",
+      "agp": "8.7.3",
+      "ndk": "27.0.12077973",
+      "cmake": "3.22.1",
+      "abi": "arm64-v8a"
+    },
+    "nativeRuntime": [
+      "llama.cpp",
+      "JNI"
+    ],
+    "network": [
+      "trusted LAN API",
+      "HMAC-SHA256 signed requests",
+      "Android NSD/DNS-SD research"
+    ],
+    "packageManagers": [
+      "Gradle",
+      "Python stdlib/unittest"
+    ]
+  },
+  "existingOperationalModel": {
+    "nativeVersion": "0.10.3-native-alpha-pairingux",
+    "physicalCertificationRequired": true,
+    "pairingAuthentication": true,
+    "transportEncryptionClaim": false,
+    "wholeWorkloadRoutingOnly": true,
+    "unifiedRam": false,
+    "automaticModelTransfer": false
+  },
+  "evidenceBoundaries": [
+    "CI GREEN != PHYSICAL NODE CERTIFIED",
+    "APK BUILDS != APK RUNS CORRECTLY ON DEVICE",
+    "MODEL HASH MATCH != MODEL LOAD SUCCESS",
+    "MODEL LOAD SUCCESS != INFERENCE SUCCESS",
+    "INFERENCE SUCCESS != HEADLESS PARITY",
+    "SIGNED REQUEST AUTHENTICATED != TRANSPORT ENCRYPTED",
+    "NODE DISCOVERED != NODE TRUSTED OR ELIGIBLE",
+    "CAPABILITY ADVERTISED != CAPABILITY PHYSICALLY VERIFIED",
+    "PLACEMENT PLAN != MODEL TRANSFER",
+    "WHOLE-WORKLOAD ROUTING != UNIFIED RAM OR DISTRIBUTED MODEL EXECUTION"
+  ],
+  "authority": {
+    "mayCertifyPhysicalStage": false,
+    "mayExposeApiBeyondTrustedLan": false,
+    "mayDisclosePairingSecrets": false,
+    "mayBypassResourcePolicy": false,
+    "mayAdmitPhysicalNodeWithoutEvidence": false,
+    "mayTransferOrDeleteModels": false,
+    "mayClaimUnifiedRam": false,
+    "mayClaimDistributedModelExecution": false,
+    "mayTreatCiAsPhysicalReadiness": false
+  },
+  "hooks": {
+    "enabled": false
+  },
+  "mcp": {
+    "enabled": false
+  },
+  "continuousLearning": {
+    "enabled": false
+  },
+  "unifiedMemory": {
+    "enabled": false,
+    "authoritative": false
+  },
+  "autonomousLoops": {
+    "enabled": false,
+    "note": "Product-owned supervisor/routing remains separate from Agent Kit autonomy."
+  },
+  "multiAgentRoles": {
+    "enabled": false
+  },
+  "agentShield": {
+    "mode": "not-enabled-yet",
+    "phase": "EDGE-ECC-P2",
+    "baselineMustBeRepositorySpecific": true,
+    "inheritedAcceptedFindings": false
+  },
+  "ci": {
+    "workflow": ".github/workflows/orbi-edge-ecc-pr-gate.yml",
+    "requiredCommands": [
+      "python -m unittest discover -s tests -v",
+      "gradle :app:testDebugUnitTest --stacktrace",
+      "gradle :app:assembleRelease --stacktrace --info",
+      "verify APK and native arm64 library"
+    ],
+    "physicalEvidenceNotProvenByCi": [
+      "APK install/runtime on physical node",
+      "model import/load/inference",
+      "pairing/replay over real LAN",
+      "headless screen-off parity",
+      "thermal/power behavior",
+      "NSD/mDNS discovery",
+      "multi-node routing"
+    ]
+  },
+  "projectSkills": [],
+  "dailyAgents": [],
+  "libraryAgents": [],
+  "dailySkills": [],
+  "librarySkills": []
+}
