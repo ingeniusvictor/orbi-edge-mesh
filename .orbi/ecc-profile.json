@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "profile": "orbi-ecc-edge-mesh-v0.5",
-  "status": "second-project-skill-materialized",
+  "profile": "orbi-ecc-edge-mesh-v0.6",
+  "status": "structured-observation-harness-materialized",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
   "repositoryBaseline": "22f857c556ef572a8b53f723f678b69ce2959fa9",
   "sourceKit": {
     "repository": "ingeniusvictor/orbi-agent-kit",
-    "version": "0.2-development",
-    "certifiedCoreThrough": "K2-05",
-    "canonicalCommit": "52af5d401566720f7ba4a429d1612dcc640c7962",
+    "version": "0.2.0",
+    "certifiedCoreThrough": "K2-06",
+    "canonicalCommit": "8ef98f7a5edd7c27bda011ba77ddd3e26c3ee31f",
     "adapterSchema": "orbi.repository.adapter.v1"
   },
   "stack": {
@@ -174,6 +174,22 @@
       ],
       "authoritative": false,
       "runtimeDependency": false
+    },
+    {
+      "name": "orbi-edge-agent-harness",
+      "path": ".agents/skills/orbi-edge-agent-harness/SKILL.md",
+      "version": "0.1.0",
+      "origin": "ORBI",
+      "activation": "conditional",
+      "triggers": [
+        "structured agent observation",
+        "bounded agent/tool workflow",
+        "recovery or stop-condition design",
+        "authority-impact handoff",
+        "software-vs-physical evidence handoff"
+      ],
+      "authoritative": false,
+      "runtimeDependency": false
     }
   ],
   "dailyAgents": [
@@ -242,7 +258,25 @@
     "defaultLoad": false,
     "conditionalSkills": [
       "orbi-edge-physical-evidence-review",
-      "orbi-edge-node-trust-review"
+      "orbi-edge-node-trust-review",
+      "orbi-edge-agent-harness"
     ]
+  },
+  "structuredObservation": {
+    "phase": "EDGE-ECC-P6",
+    "schema": ".orbi/orbi-edge-agent-observation-v1.schema.json",
+    "validator": "scripts/validate_orbi_edge_agent_observation.py",
+    "schemaVersion": "orbi.edge.agent.observation.v1",
+    "authorityImpactFields": [
+      "physicalStageStatus",
+      "pairingSecretLifecycle",
+      "lanExposure",
+      "resourcePolicyBypass",
+      "nodeAdmissionOrRouting",
+      "modelTransferOrDeletion",
+      "distributedExecutionClaims"
+    ],
+    "validatorAuthorizesActions": false,
+    "runtimeExecuted": false
   }
 }

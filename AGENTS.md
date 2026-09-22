@@ -149,8 +149,8 @@ Use the existing physical runbooks/probes for those claims.
 Source kit:
 
 - `ingeniusvictor/orbi-agent-kit`
-- v0.2 development through K2-05
-- canonical commit: `52af5d401566720f7ba4a429d1612dcc640c7962`
+- v0.2.0 certified through K2-06
+- canonical commit: `8ef98f7a5edd7c27bda011ba77ddd3e26c3ee31f`
 
 Initial pilot constraints:
 

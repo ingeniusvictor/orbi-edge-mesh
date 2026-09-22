@@ -132,6 +132,16 @@
         "routing candidate evidence"
       ],
       "defaultLoad": false
+    },
+    {
+      "skill": "orbi-edge-agent-harness",
+      "when": [
+        "structured observation or agent handoff",
+        "bounded recovery/stop-condition design",
+        "authority-impact review across physical/security/network/routing domains",
+        "CI-to-local-evidence handoff"
+      ],
+      "defaultLoad": false
     }
   ],
   "deferredCapabilities": [
