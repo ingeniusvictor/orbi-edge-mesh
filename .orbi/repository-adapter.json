@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "orbi.repository.adapter.v1",
+  "project": {
+    "id": "orbi-edge-mesh",
+    "repository": "ingeniusvictor/orbi-edge-mesh",
+    "canonicalBranch": "feature/native-alpha-pairing-ux"
+  },
+  "verification": {
+    "install": [],
+    "focused": [
+      "python -m unittest discover -s tests -v",
+      "gradle :app:testDebugUnitTest --stacktrace (working-directory android/edge-node-native)"
+    ],
+    "integrated": [
+      "python -m unittest discover -s tests -v",
+      "gradle :app:testDebugUnitTest --stacktrace",
+      "gradle :app:assembleRelease --stacktrace --info",
+      "verify release APK contains lib/arm64-v8a/liborbi_native.so"
+    ],
+    "localOnly": [
+      "install APK on target Android node",
+      "verify device-side model SHA-256",
+      "load model in native runtime",
+      "run real native inference",
+      "run signed LAN request and replay-rejection probe",
+      "screen-off/headless parity",
+      "observe real battery/thermal policy",
+      "multi-node discovery/routing when applicable"
+    ],
+    "externalEvidence": [
+      "real Node-01/Node-02 Android device state",
+      "real Wi-Fi/LAN reachability",
+      "real Android NSD/mDNS visibility",
+      "actual pairing secret lifecycle",
+      "real model file/runtime presence",
+      "physical thermal/power behavior"
+    ]
+  },
+  "authorityDomains": [
+    {
+      "id": "physical-stage-certification",
+      "description": "Promoting any N-stage or physical validation gate to PASS.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    },
+    {
+      "id": "pairing-secret-lifecycle",
+      "description": "Generating, rotating, revoking or disclosing pairing/authentication secrets on physical nodes.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    },
+    {
+      "id": "lan-exposure",
+      "description": "Changing trusted-LAN API binding/exposure or making the research API reachable beyond the intended LAN.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    },
+    {
+      "id": "resource-policy-bypass",
+      "description": "Bypassing thermal/power ALLOW-DEGRADE-BLOCK decisions or bounded recovery protections.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    },
+    {
+      "id": "node-admission-and-routing",
+      "description": "Admitting physical nodes or treating advertised capabilities as eligible for real workload routing.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    },
+    {
+      "id": "model-placement-transfer",
+      "description": "Copying/downloading/deleting model binaries or converting advisory placement into transfer/execution.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    },
+    {
+      "id": "distributed-execution-claim",
+      "description": "Claiming unified RAM, tensor/expert/KV sharding or distributed model execution from whole-request routing evidence.",
+      "agentMayAuthorize": false,
+      "humanApprovalRequired": true,
+      "localEvidenceRequired": true
+    }
+  ],
+  "agentShield": {
+    "branches": [
+      "feature/native-alpha-pairing-ux"
+    ],
+    "paths": [
+      ".github/**",
+      ".orbi/**",
+      ".agents/**",
+      "docs/ecc/**",
+      "AGENTS.md",
+      "android/edge-node-native/**",
+      "manager/**",
+      "security/**",
+      "contracts/**",
+      "scripts/pc/**",
+      "tests/**"
+    ],
+    "inheritAcceptedFindings": false,
+    "acceptedFindingClasses": [],
+    "baseline": "BASELINE_CLEAN — NO_ACCEPTED_FINDING_CLASSES",
+    "baselineRun": 35736298537
+  },
+  "skillRouting": [
+    {
+      "skill": "orbi-edge-physical-evidence-review",
+      "when": [
+        "physical N-stage claim",
+        "APK/device/model physical validation",
+        "pairing/signed/replay physical validation",
+        "headless parity",
+        "thermal/power observation",
+        "real-node discovery/routing evidence"
+      ],
+      "defaultLoad": false
+    },
+    {
+      "skill": "orbi-edge-node-trust-review",
+      "when": [
+        "node trust/admission review",
+        "pairing or signed-control trust evidence",
+        "capability/service/model advertisement",
+        "LAN discovery and eligibility",
+        "routing candidate evidence"
+      ],
+      "defaultLoad": false
+    },
+    {
+      "skill": "orbi-edge-agent-harness",
+      "when": [
+        "structured observation or agent handoff",
+        "bounded recovery/stop-condition design",
+        "authority-impact review across physical/security/network/routing domains",
+        "CI-to-local-evidence handoff"
+      ],
+      "defaultLoad": false
+    },
+    {
+      "skill": "orbi-edge-context-budget",
+      "when": [
+        "persistent instruction growth",
+        "skill/config loading classification",
+        "context budget review",
+        "instruction deduplication without weakening authority boundaries"
+      ],
+      "defaultLoad": false
+    }
+  ],
+  "deferredCapabilities": [
+    "hooks",
+    "mcp",
+    "continuous-learning",
+    "unified-memory",
+    "agent-kit-autonomous-loops",
+    "multi-agent-runtime-roles"
+  ]
+}

@@ -39,6 +39,7 @@ class NodeState:
     resource_action: str = "UNKNOWN"
     resource_reason: str = ""
     model_loaded: bool = False
+    model_ids: tuple[str, ...] = ()
     paired: bool = False
     battery_percent: int | None = None
     thermal_status: str | None = None
@@ -69,6 +70,25 @@ def load_config(path: Path) -> list[NodeConfig]:
     ]
 
 
+def advertised_model_ids(models: dict[str, Any]) -> tuple[str, ...]:
+    data = models.get("data")
+    if not isinstance(data, list):
+        return ()
+
+    result: list[str] = []
+    for item in data:
+        if not isinstance(item, dict):
+            continue
+        model_id = item.get("id")
+        if not isinstance(model_id, str):
+            continue
+        model_id = model_id.strip()
+        if model_id and model_id not in result:
+            result.append(model_id)
+
+    return tuple(result)
+
+
 def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
     try:
         node = get_json(config.base_url + "/node", timeout)
@@ -85,15 +105,15 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
             error="NODE_ID_MISMATCH",
         )
 
-    data = models.get("data")
-    has_model = isinstance(data, list) and len(data) > 0
+    model_ids = advertised_model_ids(models)
 
     return NodeState(
         config=config,
         reachable=True,
         resource_action=str(node.get("resource_action", "UNKNOWN")).upper(),
         resource_reason=str(node.get("resource_reason", "")),
-        model_loaded=bool(node.get("model_loaded", False)) and has_model,
+        model_loaded=bool(node.get("model_loaded", False)) and bool(model_ids),
+        model_ids=model_ids,
         paired=bool(node.get("paired", False)),
         battery_percent=node.get("battery_percent"),
         thermal_status=node.get("thermal_status"),
@@ -104,7 +124,7 @@ def inspect_node(config: NodeConfig, timeout: float) -> NodeState:
 def candidate_rank(state: NodeState) -> tuple[int, int, str]:
     if not state.reachable:
         return (9, 999, state.config.name)
-    if not state.model_loaded:
+    if not state.model_loaded or not state.model_ids:
         return (8, 999, state.config.name)
     if not state.paired:
         return (7, 999, state.config.name)
@@ -125,9 +145,16 @@ def eligible(state: NodeState) -> bool:
     return (
         state.reachable
         and state.model_loaded
+        and bool(state.model_ids)
         and state.paired
         and state.resource_action in {"ALLOW", "DEGRADE"}
     )
+
+
+def advertised_model_id(state: NodeState) -> str:
+    if not state.model_loaded or not state.model_ids:
+        raise ValueError(f"{state.config.name} has no loaded advertised model")
+    return state.model_ids[0]
 
 
 def decode_token(token: str) -> bytes:
@@ -171,8 +198,9 @@ def sign_headers(config: NodeConfig, method: str, path: str, body: bytes) -> dic
 
 def execute_chat(state: NodeState, prompt: str, max_tokens: int, timeout: float) -> dict[str, Any]:
     path = "/v1/chat/completions"
+    model_id = advertised_model_id(state)
     payload = {
-        "model": "qwen3-1.7b-q4_k_m-node01",
+        "model": model_id,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max(1, min(max_tokens, 256)),
         "stream": False,
@@ -226,6 +254,7 @@ def main() -> int:
     failures = []
     for state in candidates:
         try:
+            selected_model = advertised_model_id(state)
             completion = execute_chat(
                 state,
                 args.prompt,
@@ -235,6 +264,7 @@ def main() -> int:
             print(json.dumps({
                 "selected_node": state.config.name,
                 "selected_host": state.config.host,
+                "selected_model": selected_model,
                 "completion": completion,
             }, ensure_ascii=False, indent=2))
             return 0

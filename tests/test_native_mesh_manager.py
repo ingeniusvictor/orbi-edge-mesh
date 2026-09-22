@@ -20,6 +20,7 @@ class NativeMeshRoutingTests(unittest.TestCase):
         loaded=True,
         paired=True,
         reachable=True,
+        model_ids=("qwen-test",),
     ):
         cfg = mod.NodeConfig(
             name=name,
@@ -33,6 +34,7 @@ class NativeMeshRoutingTests(unittest.TestCase):
             reachable=reachable,
             resource_action=action,
             model_loaded=loaded,
+            model_ids=model_ids,
             paired=paired,
             battery_percent=battery,
         )
@@ -61,6 +63,34 @@ class NativeMeshRoutingTests(unittest.TestCase):
 
     def test_unloaded_is_not_eligible(self):
         self.assertFalse(mod.eligible(self.node("cold", loaded=False)))
+
+    def test_loaded_without_advertised_model_is_not_eligible(self):
+        self.assertFalse(mod.eligible(self.node("no-model-id", loaded=True, model_ids=())))
+
+    def test_advertised_model_parser_ignores_invalid_entries_and_duplicates(self):
+        models = {
+            "data": [
+                {"id": "qwen-node02"},
+                {"id": "qwen-node02"},
+                {"id": "  second-model  "},
+                {"id": ""},
+                {"object": "model"},
+                "invalid",
+            ]
+        }
+        self.assertEqual(
+            ("qwen-node02", "second-model"),
+            mod.advertised_model_ids(models),
+        )
+
+    def test_advertised_model_id_comes_from_selected_node(self):
+        state = self.node("node02", model_ids=("qwen-node02",))
+        self.assertEqual("qwen-node02", mod.advertised_model_id(state))
+
+    def test_advertised_model_id_rejects_missing_model(self):
+        state = self.node("node02", loaded=True, model_ids=())
+        with self.assertRaises(ValueError):
+            mod.advertised_model_id(state)
 
 
 if __name__ == "__main__":

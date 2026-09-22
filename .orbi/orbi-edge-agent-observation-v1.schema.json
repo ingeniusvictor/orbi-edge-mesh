@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbi.local/schemas/orbi-edge-agent-observation-v1.schema.json",
+  "title": "ORBI Edge Agent Observation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "summary",
+    "nextActions",
+    "artifacts",
+    "evidence",
+    "authorityImpact"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "orbi.edge.agent.observation.v1"
+    },
+    "status": {
+      "enum": [
+        "success",
+        "warning",
+        "error"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "nextActions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "maxItems": 20
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "maxItems": 50
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "reference",
+          "verification"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "git",
+              "test",
+              "ci",
+              "file",
+              "artifact",
+              "runtime",
+              "external"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1
+          },
+          "verification": {
+            "enum": [
+              "verified",
+              "observed",
+              "unverified"
+            ]
+          }
+        }
+      }
+    },
+    "authorityImpact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalStageStatus",
+        "pairingSecretLifecycle",
+        "lanExposure",
+        "resourcePolicyBypass",
+        "nodeAdmissionOrRouting",
+        "modelTransferOrDeletion",
+        "distributedExecutionClaims"
+      ],
+      "properties": {
+        "physicalStageStatus": {
+          "type": "boolean"
+        },
+        "pairingSecretLifecycle": {
+          "type": "boolean"
+        },
+        "lanExposure": {
+          "type": "boolean"
+        },
+        "resourcePolicyBypass": {
+          "type": "boolean"
+        },
+        "nodeAdmissionOrRouting": {
+          "type": "boolean"
+        },
+        "modelTransferOrDeletion": {
+          "type": "boolean"
+        },
+        "distributedExecutionClaims": {
+          "type": "boolean"
+        }
+      }
+    },
+    "humanApprovalRequired": {
+      "type": "boolean"
+    },
+    "localEvidenceRequired": {
+      "type": "boolean"
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rootCauseHint",
+        "safeRetry",
+        "stopCondition"
+      ],
+      "properties": {
+        "rootCauseHint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "safeRetry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stopCondition": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "error"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "recovery"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "profile": "orbi-ecc-edge-mesh-v1.0",
+  "status": "selective-adoption-certified",
+  "adoptionMode": "curated",
+  "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
+  "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
+  "repositoryBaseline": "22f857c556ef572a8b53f723f678b69ce2959fa9",
+  "sourceKit": {
+    "repository": "ingeniusvictor/orbi-agent-kit",
+    "version": "0.2.0",
+    "certifiedCoreThrough": "K2-06",
+    "canonicalCommit": "8ef98f7a5edd7c27bda011ba77ddd3e26c3ee31f",
+    "adapterSchema": "orbi.repository.adapter.v1"
+  },
+  "stack": {
+    "languages": [
+      "Kotlin",
+      "C++17",
+      "Python"
+    ],
+    "android": {
+      "compileSdk": 35,
+      "minSdk": 26,
+      "targetSdk": 35,
+      "jdk": 17,
+      "kotlin": "2.0.21",
+      "agp": "8.7.3",
+      "ndk": "27.0.12077973",
+      "cmake": "3.22.1",
+      "abi": "arm64-v8a"
+    },
+    "nativeRuntime": [
+      "llama.cpp",
+      "JNI"
+    ],
+    "network": [
+      "trusted LAN API",
+      "HMAC-SHA256 signed requests",
+      "Android NSD/DNS-SD research"
+    ],
+    "packageManagers": [
+      "Gradle",
+      "Python stdlib/unittest"
+    ]
+  },
+  "existingOperationalModel": {
+    "nativeVersion": "0.10.3-native-alpha-pairingux",
+    "physicalCertificationRequired": true,
+    "pairingAuthentication": true,
+    "transportEncryptionClaim": false,
+    "wholeWorkloadRoutingOnly": true,
+    "unifiedRam": false,
+    "automaticModelTransfer": false
+  },
+  "evidenceBoundaries": [
+    "CI GREEN != PHYSICAL NODE CERTIFIED",
+    "APK BUILDS != APK RUNS CORRECTLY ON DEVICE",
+    "MODEL HASH MATCH != MODEL LOAD SUCCESS",
+    "MODEL LOAD SUCCESS != INFERENCE SUCCESS",
+    "INFERENCE SUCCESS != HEADLESS PARITY",
+    "SIGNED REQUEST AUTHENTICATED != TRANSPORT ENCRYPTED",
+    "NODE DISCOVERED != NODE TRUSTED OR ELIGIBLE",
+    "CAPABILITY ADVERTISED != CAPABILITY PHYSICALLY VERIFIED",
+    "PLACEMENT PLAN != MODEL TRANSFER",
+    "WHOLE-WORKLOAD ROUTING != UNIFIED RAM OR DISTRIBUTED MODEL EXECUTION"
+  ],
+  "authority": {
+    "mayCertifyPhysicalStage": false,
+    "mayExposeApiBeyondTrustedLan": false,
+    "mayDisclosePairingSecrets": false,
+    "mayBypassResourcePolicy": false,
+    "mayAdmitPhysicalNodeWithoutEvidence": false,
+    "mayTransferOrDeleteModels": false,
+    "mayClaimUnifiedRam": false,
+    "mayClaimDistributedModelExecution": false,
+    "mayTreatCiAsPhysicalReadiness": false
+  },
+  "hooks": {
+    "enabled": false
+  },
+  "mcp": {
+    "enabled": false
+  },
+  "continuousLearning": {
+    "enabled": false
+  },
+  "unifiedMemory": {
+    "enabled": false,
+    "authoritative": false
+  },
+  "autonomousLoops": {
+    "enabled": false,
+    "note": "Product-owned supervisor/routing remains separate from Agent Kit autonomy."
+  },
+  "multiAgentRoles": {
+    "enabled": false
+  },
+  "agentShield": {
+    "mode": "report-only",
+    "package": "ecc-agentshield",
+    "version": "1.6.0",
+    "repository": "affaan-m/agentshield",
+    "commit": "b0891303bdcd6037376a94263d45cfd2ff3dfb98",
+    "autoFix": false,
+    "ciEnforced": false,
+    "failOnFindings": false,
+    "inheritedAcceptedFindings": false,
+    "baselineClassification": "BASELINE_CLEAN — NO_ACCEPTED_FINDING_CLASSES",
+    "firstRun": {
+      "runId": 35736298537,
+      "score": 100,
+      "grade": "A",
+      "findings": 0,
+      "uniqueFindingClasses": 0,
+      "supplyChain": "clean",
+      "evidencePackVerified": true,
+      "evidencePackDigest": "sha256:0ef2730141a44cbf8f172ee1799dc9be84ab6c0ae84e42b81caa005fdea8c728",
+      "artifactId": 10698241187,
+      "artifactDigest": "sha256:c1e4a630b4f40c15192056348834c045669b942a0674bc622ceb87aeb41f45bf"
+    }
+  },
+  "ci": {
+    "workflow": ".github/workflows/orbi-edge-ecc-pr-gate.yml",
+    "requiredCommands": [
+      "python -m unittest discover -s tests -v",
+      "gradle :app:testDebugUnitTest --stacktrace",
+      "gradle :app:assembleRelease --stacktrace --info",
+      "verify APK and native arm64 library"
+    ],
+    "physicalEvidenceNotProvenByCi": [
+      "APK install/runtime on physical node",
+      "model import/load/inference",
+      "pairing/replay over real LAN",
+      "headless screen-off parity",
+      "thermal/power behavior",
+      "NSD/mDNS discovery",
+      "multi-node routing"
+    ]
+  },
+  "projectSkills": [
+    {
+      "name": "orbi-edge-physical-evidence-review",
+      "path": ".agents/skills/orbi-edge-physical-evidence-review/SKILL.md",
+      "version": "0.1.0",
+      "origin": "ORBI",
+      "activation": "conditional",
+      "triggers": [
+        "physical N-stage claim",
+        "APK/device validation",
+        "model import/hash/load/inference",
+        "pairing or signed/replay validation",
+        "headless parity",
+        "thermal/power physical evidence",
+        "physical discovery/routing"
+      ],
+      "authoritative": false,
+      "runtimeDependency": false
+    },
+    {
+      "name": "orbi-edge-node-trust-review",
+      "path": ".agents/skills/orbi-edge-node-trust-review/SKILL.md",
+      "version": "0.1.0",
+      "origin": "ORBI",
+      "activation": "conditional",
+      "triggers": [
+        "node trust or admission",
+        "pairing/authentication evidence",
+        "capability manifest review",
+        "service/model advertisement",
+        "LAN discovery",
+        "routing eligibility",
+        "real-node manager evidence"
+      ],
+      "authoritative": false,
+      "runtimeDependency": false
+    },
+    {
+      "name": "orbi-edge-agent-harness",
+      "path": ".agents/skills/orbi-edge-agent-harness/SKILL.md",
+      "version": "0.1.0",
+      "origin": "ORBI",
+      "activation": "conditional",
+      "triggers": [
+        "structured agent observation",
+        "bounded agent/tool workflow",
+        "recovery or stop-condition design",
+        "authority-impact handoff",
+        "software-vs-physical evidence handoff"
+      ],
+      "authoritative": false,
+      "runtimeDependency": false
+    },
+    {
+      "name": "orbi-edge-context-budget",
+      "path": ".agents/skills/orbi-edge-context-budget/SKILL.md",
+      "version": "0.1.0",
+      "origin": "ORBI",
+      "activation": "conditional",
+      "triggers": [
+        "AGENTS instruction growth",
+        "project skill loading policy",
+        "context budget review",
+        "profile/adapter/schema loading review"
+      ],
+      "authoritative": false,
+      "runtimeDependency": false
+    }
+  ],
+  "dailyAgents": [
+    "planner",
+    "architect",
+    "code-reviewer",
+    "security-reviewer",
+    "tdd-guide",
+    "doc-updater",
+    "kotlin-reviewer",
+    "python-reviewer"
+  ],
+  "libraryAgents": [
+    "cpp-reviewer",
+    "build-error-resolver",
+    "performance-optimizer",
+    "refactor-cleaner",
+    "e2e-runner",
+    "harness-optimizer",
+    "loop-operator",
+    "mle-reviewer",
+    "rag-pipeline-reviewer"
+  ],
+  "dailySkills": [
+    "architecture-decision-records",
+    "coding-standards",
+    "contract-first",
+    "tdd-workflow",
+    "verification-loop",
+    "security-review",
+    "context-budget",
+    "delivery-gate",
+    "git-workflow"
+  ],
+  "librarySkills": [
+    "agent-sort",
+    "codebase-onboarding",
+    "agent-harness-construction",
+    "ai-regression-testing",
+    "eval-harness",
+    "benchmark",
+    "benchmark-methodology",
+    "error-handling",
+    "kotlin-patterns",
+    "kotlin-testing",
+    "python-patterns",
+    "python-testing",
+    "cpp-coding-standards",
+    "cpp-testing"
+  ],
+  "agentSort": {
+    "phase": "EDGE-ECC-P3",
+    "evidenceBacked": true,
+    "runtimeExecuted": false,
+    "p2CanonicalAtStart": "766a48a10756969c59f19b85638b54da962d0e51",
+    "mandatoryTriggeredReviewers": [
+      {
+        "reviewer": "cpp-reviewer",
+        "when": "C++ / JNI / native boundary changes"
+      }
+    ],
+    "nextRecommendedSkill": "orbi-edge-physical-evidence-review",
+    "secondRecommendedSkill": "orbi-edge-node-trust-review"
+  },
+  "projectSkillRouting": {
+    "defaultLoad": false,
+    "conditionalSkills": [
+      "orbi-edge-physical-evidence-review",
+      "orbi-edge-node-trust-review",
+      "orbi-edge-agent-harness",
+      "orbi-edge-context-budget"
+    ]
+  },
+  "structuredObservation": {
+    "phase": "EDGE-ECC-P6",
+    "schema": ".orbi/orbi-edge-agent-observation-v1.schema.json",
+    "validator": "scripts/validate_orbi_edge_agent_observation.py",
+    "schemaVersion": "orbi.edge.agent.observation.v1",
+    "authorityImpactFields": [
+      "physicalStageStatus",
+      "pairingSecretLifecycle",
+      "lanExposure",
+      "resourcePolicyBypass",
+      "nodeAdmissionOrRouting",
+      "modelTransferOrDeletion",
+      "distributedExecutionClaims"
+    ],
+    "validatorAuthorizesActions": false,
+    "runtimeExecuted": false
+  },
+  "contextBudget": {
+    "phase": "EDGE-ECC-P7",
+    "auditor": "scripts/ecc_orbi_edge_context_budget.py",
+    "schemaVersion": "orbi.edge.context-budget.v1",
+    "loadingModel": {
+      "alwaysInstructions": "persistent",
+      "discoverableSkills": "conditional",
+      "configReferences": "on-demand"
+    },
+    "protectedPersistentInvariants": [
+      "CI vs physical certification",
+      "signed authentication vs encrypted transport",
+      "trusted LAN vs public exposure",
+      "node discovery vs trust/admission",
+      "resource policy",
+      "whole-workload routing vs distributed execution"
+    ],
+    "estimateIsExactTokenizerAccounting": false,
+    "runtimeExecuted": false
+  },
+  "upstream": {
+    "ecc": {
+      "repository": "affaan-m/ECC",
+      "version": "2.2.2",
+      "commit": "91ba9b4cf6c47c8130829004f8bb64762a76ccbb"
+    },
+    "agentShield": {
+      "repository": "affaan-m/agentshield",
+      "package": "ecc-agentshield",
+      "version": "1.6.0",
+      "commit": "b0891303bdcd6037376a94263d45cfd2ff3dfb98"
+    }
+  },
+  "certification": {
+    "phase": "EDGE-ECC-P8",
+    "certifiedThrough": "EDGE-ECC-P7",
+    "preCertificationCanonical": "6b26d81664c4d546e22383b40befeaa0a78992dd",
+    "finalPreCertificationHead": "b3952e683925daa89d1cc310f7a32476ffdcd57b",
+    "phase0Run": 35757257010,
+    "integratedGateRun": 35757257518,
+    "pythonTests": {
+      "passed": 90,
+      "failed": 0
+    },
+    "androidUnitTests": "pass",
+    "optimizedReleaseApk": "pass",
+    "nativeArm64Verification": "pass",
+    "releaseApkSha256": "b98be875bb54a05e75fd45f198d00882d54d969a46f361445696bb0e7194c154",
+    "agentShieldRun": 35757257087,
+    "agentShieldNewFindingClass": false,
+    "agentShieldFindings": 0,
+    "portableProfile": ".orbi/agent-kit-portable-profile.json",
+    "physicalReadinessCertifiedByCi": false,
+    "distributedModelExecutionCertified": false
+  }
+}
