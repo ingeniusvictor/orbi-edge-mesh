@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profile": "orbi-ecc-edge-mesh-v0.2",
-  "status": "agentshield-report-baseline",
+  "status": "agentshield-baseline-classified",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
@@ -106,7 +106,19 @@
     "ciEnforced": false,
     "failOnFindings": false,
     "inheritedAcceptedFindings": false,
-    "baselineClassification": "pending-first-run-review"
+    "baselineClassification": "BASELINE_CLEAN — NO_ACCEPTED_FINDING_CLASSES",
+    "firstRun": {
+      "runId": 35736298537,
+      "score": 100,
+      "grade": "A",
+      "findings": 0,
+      "uniqueFindingClasses": 0,
+      "supplyChain": "clean",
+      "evidencePackVerified": true,
+      "evidencePackDigest": "sha256:0ef2730141a44cbf8f172ee1799dc9be84ab6c0ae84e42b81caa005fdea8c728",
+      "artifactId": 10698241187,
+      "artifactDigest": "sha256:c1e4a630b4f40c15192056348834c045669b942a0674bc622ceb87aeb41f45bf"
+    }
   },
   "ci": {
     "workflow": ".github/workflows/orbi-edge-ecc-pr-gate.yml",
