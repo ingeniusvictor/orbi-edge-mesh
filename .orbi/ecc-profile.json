@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "profile": "orbi-ecc-edge-mesh-v0.6",
-  "status": "structured-observation-harness-materialized",
+  "profile": "orbi-ecc-edge-mesh-v0.7",
+  "status": "context-budget-governed",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
@@ -190,6 +190,21 @@
       ],
       "authoritative": false,
       "runtimeDependency": false
+    },
+    {
+      "name": "orbi-edge-context-budget",
+      "path": ".agents/skills/orbi-edge-context-budget/SKILL.md",
+      "version": "0.1.0",
+      "origin": "ORBI",
+      "activation": "conditional",
+      "triggers": [
+        "AGENTS instruction growth",
+        "project skill loading policy",
+        "context budget review",
+        "profile/adapter/schema loading review"
+      ],
+      "authoritative": false,
+      "runtimeDependency": false
     }
   ],
   "dailyAgents": [
@@ -259,7 +274,8 @@
     "conditionalSkills": [
       "orbi-edge-physical-evidence-review",
       "orbi-edge-node-trust-review",
-      "orbi-edge-agent-harness"
+      "orbi-edge-agent-harness",
+      "orbi-edge-context-budget"
     ]
   },
   "structuredObservation": {
@@ -277,6 +293,26 @@
       "distributedExecutionClaims"
     ],
     "validatorAuthorizesActions": false,
+    "runtimeExecuted": false
+  },
+  "contextBudget": {
+    "phase": "EDGE-ECC-P7",
+    "auditor": "scripts/ecc_orbi_edge_context_budget.py",
+    "schemaVersion": "orbi.edge.context-budget.v1",
+    "loadingModel": {
+      "alwaysInstructions": "persistent",
+      "discoverableSkills": "conditional",
+      "configReferences": "on-demand"
+    },
+    "protectedPersistentInvariants": [
+      "CI vs physical certification",
+      "signed authentication vs encrypted transport",
+      "trusted LAN vs public exposure",
+      "node discovery vs trust/admission",
+      "resource policy",
+      "whole-workload routing vs distributed execution"
+    ],
+    "estimateIsExactTokenizerAccounting": false,
     "runtimeExecuted": false
   }
 }

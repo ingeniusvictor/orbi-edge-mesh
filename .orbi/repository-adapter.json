@@ -142,6 +142,16 @@
         "CI-to-local-evidence handoff"
       ],
       "defaultLoad": false
+    },
+    {
+      "skill": "orbi-edge-context-budget",
+      "when": [
+        "persistent instruction growth",
+        "skill/config loading classification",
+        "context budget review",
+        "instruction deduplication without weakening authority boundaries"
+      ],
+      "defaultLoad": false
     }
   ],
   "deferredCapabilities": [
