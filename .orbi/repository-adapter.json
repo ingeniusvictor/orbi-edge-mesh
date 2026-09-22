@@ -105,7 +105,9 @@
       "tests/**"
     ],
     "inheritAcceptedFindings": false,
-    "acceptedFindingClasses": []
+    "acceptedFindingClasses": [],
+    "baseline": "BASELINE_CLEAN — NO_ACCEPTED_FINDING_CLASSES",
+    "baselineRun": 35736298537
   },
   "skillRouting": [],
   "deferredCapabilities": [
