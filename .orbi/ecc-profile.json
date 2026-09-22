@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "profile": "orbi-ecc-edge-mesh-v0.7",
-  "status": "context-budget-governed",
+  "profile": "orbi-ecc-edge-mesh-v1.0",
+  "status": "selective-adoption-certified",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
@@ -314,5 +314,40 @@
     ],
     "estimateIsExactTokenizerAccounting": false,
     "runtimeExecuted": false
+  },
+  "upstream": {
+    "ecc": {
+      "repository": "affaan-m/ECC",
+      "version": "2.2.2",
+      "commit": "91ba9b4cf6c47c8130829004f8bb64762a76ccbb"
+    },
+    "agentShield": {
+      "repository": "affaan-m/agentshield",
+      "package": "ecc-agentshield",
+      "version": "1.6.0",
+      "commit": "b0891303bdcd6037376a94263d45cfd2ff3dfb98"
+    }
+  },
+  "certification": {
+    "phase": "EDGE-ECC-P8",
+    "certifiedThrough": "EDGE-ECC-P7",
+    "preCertificationCanonical": "6b26d81664c4d546e22383b40befeaa0a78992dd",
+    "finalPreCertificationHead": "b3952e683925daa89d1cc310f7a32476ffdcd57b",
+    "phase0Run": 35757257010,
+    "integratedGateRun": 35757257518,
+    "pythonTests": {
+      "passed": 90,
+      "failed": 0
+    },
+    "androidUnitTests": "pass",
+    "optimizedReleaseApk": "pass",
+    "nativeArm64Verification": "pass",
+    "releaseApkSha256": "b98be875bb54a05e75fd45f198d00882d54d969a46f361445696bb0e7194c154",
+    "agentShieldRun": 35757257087,
+    "agentShieldNewFindingClass": false,
+    "agentShieldFindings": 0,
+    "portableProfile": ".orbi/agent-kit-portable-profile.json",
+    "physicalReadinessCertifiedByCi": false,
+    "distributedModelExecutionCertified": false
   }
 }
