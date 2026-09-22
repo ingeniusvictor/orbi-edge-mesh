@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
-  "profile": "orbi-ecc-edge-mesh-v0.5",
-  "status": "second-project-skill-materialized",
+  "profile": "orbi-ecc-edge-mesh-v0.6",
+  "status": "fifth-pilot-certification-candidate",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
   "repositoryBaseline": "22f857c556ef572a8b53f723f678b69ce2959fa9",
   "sourceKit": {
     "repository": "ingeniusvictor/orbi-agent-kit",
-    "version": "0.2-development",
-    "certifiedCoreThrough": "K2-05",
-    "canonicalCommit": "52af5d401566720f7ba4a429d1612dcc640c7962",
+    "version": "0.2.0",
+    "certifiedCoreThrough": "K2-06",
+    "canonicalCommit": "8ef98f7a5edd7c27bda011ba77ddd3e26c3ee31f",
     "adapterSchema": "orbi.repository.adapter.v1"
   },
   "stack": {
@@ -244,5 +244,14 @@
       "orbi-edge-physical-evidence-review",
       "orbi-edge-node-trust-review"
     ]
+  },
+  "pilotCertification": {
+    "phase": "EDGE-ECC-P6",
+    "status": "candidate",
+    "fifthPilot": true,
+    "p5Merge": "d90bf4160c4f48ee8fd6d3e96dded6d23e58c988",
+    "runtimeSourceChangedByPilot": false,
+    "physicalStagePromotedByPilot": false,
+    "finalHeadRule": "P6 final HEAD must pass Phase 0, Edge ECC integrated gate and AgentShield report-only before merge"
   }
 }
