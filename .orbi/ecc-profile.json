@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "profile": "orbi-ecc-edge-mesh-v0.1",
-  "status": "inventory-and-instruction-baseline",
+  "profile": "orbi-ecc-edge-mesh-v0.2",
+  "status": "agentshield-report-baseline",
   "adoptionMode": "curated",
   "scope": "ingeniusvictor/orbi-edge-mesh/native-alpha",
   "activeDevelopmentBase": "feature/native-alpha-pairing-ux",
@@ -97,10 +97,16 @@
     "enabled": false
   },
   "agentShield": {
-    "mode": "not-enabled-yet",
-    "phase": "EDGE-ECC-P2",
-    "baselineMustBeRepositorySpecific": true,
-    "inheritedAcceptedFindings": false
+    "mode": "report-only",
+    "package": "ecc-agentshield",
+    "version": "1.6.0",
+    "repository": "affaan-m/agentshield",
+    "commit": "b0891303bdcd6037376a94263d45cfd2ff3dfb98",
+    "autoFix": false,
+    "ciEnforced": false,
+    "failOnFindings": false,
+    "inheritedAcceptedFindings": false,
+    "baselineClassification": "pending-first-run-review"
   },
   "ci": {
     "workflow": ".github/workflows/orbi-edge-ecc-pr-gate.yml",
